@@ -359,7 +359,7 @@ if __name__ == '__main__':
     # List of the files in machines directories that we delete from all releases
     CRUFT_LIST = ['*.md5sum', '*.tar.gz', '*.iso']
     # List of the platforms for which we want to generate BSP tarballs. Major and point releases.
-    BSP_LIST = ['beaglebone', 'edgerouter', 'genericx86', 'genericx86-64']
+    BSP_LIST = ['beaglebone', 'edgerouter', 'genericx86', 'genericx86-64', 'mpc8315e-rdb']
     # List of files we do not want to include in the BSP tarballs.
     BSP_JUNK = ['*.manifest', '*.tar.bz2', '*.tgz', '*.iso', '*.md5sum', '*.tar.gz', '*-dev-*', '*-sdk-*']
 
