@@ -132,7 +132,7 @@ if __name__ == '__main__':
     os.chdir(RELEASE_DIR)
     files = glob.glob('*.bz2')
     allfiles = filter(lambda f: os.path.isfile(f), files)
-    found = filter(lambda x: '14.0.1' not in x, allfiles)
+    found = filter(lambda x: POKY_VER not in x, allfiles)
     filelist = filter(lambda z: 'fsl' not in z, found)
     filelist.sort()
     for item in filelist:
