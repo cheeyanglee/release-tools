@@ -2,7 +2,7 @@
 Created on Jan 7, 2016
 
 __author__ = "Tracy Graydon"
-__copyright__ = "Copyright 2016, Intel Corp."
+__copyright__ = "Copyright 2016, 2017 Intel Corp."
 __credits__ = ["Tracy Graydon"]
 __license__ = "GPL"
 __version__ = "2.0"
@@ -10,6 +10,7 @@ __maintainer__ = "Tracy Graydon"
 __email__ = "tracy.graydon@intel.com"
 '''
 
+import logging
 import os
 import optparse
 import sys
@@ -82,6 +83,7 @@ def rejoin_thing(thing, marker):
 def fix_tarballs():
     print
     print "Repackaging poky and eclipse tarballs...."
+    logging.info('Repackaging poky and eclipse tarballs.')
     os.chdir(RELEASE_DIR)
     os.mkdir(TARBALL_DIR)
     os.system("mv %s/*.tar.bz2 %s" %(RELEASE_DIR, TARBALL_DIR))
@@ -90,6 +92,7 @@ def fix_tarballs():
     dirlist = get_list(TARBALL_DIR)
     for blob in dirlist:
         print "Original Tarball: %s" %blob
+        logging.info('Repackaging %s' %blob)
         chunks = split_thing(blob, ".")
         filename = chunks[0]
         basename = split_thing(filename, "-")
@@ -99,6 +102,7 @@ def fix_tarballs():
         chunks[0] = new_name
         new_blob = rejoin_thing(chunks, ".")
         print "New Tarball: %s" %new_blob
+        logging.info('New blob is %s' %new_blob)
         os.system("tar jxf %s" %blob)
         os.system("mv %s %s" %(filename, new_name))
         os.system("rm -rf %s/.git*" %new_name)
@@ -107,10 +111,13 @@ def fix_tarballs():
         rmtree(new_name)
         os.symlink(new_blob, blob)
         os.system("md5sum %s > %s.md5sum" %(new_blob, new_blob))
+        logging.info('Successful.')
         print
+    logging.info('Moving new blobs to release dir and cleaning up.')
     os.system("mv * %s" %RELEASE_DIR)
     os.chdir(RELEASE_DIR)
     os.rmdir(TARBALL_DIR)
+    logging.info('Successful.')
     print
     return
 
@@ -212,7 +219,7 @@ def make_bsps(bsp_list, bsp_dir):
             copyfile(poky_blob, target)
             os.chdir(dirname)
             print "Unpacking poky tarball."
-            os.system("tar jxf %s" %POKY_TARBALL)
+            os.system("tar jxf %s" %POKY_TARBALL
             shutil.move(blob_dir, new_dir)
             os.remove(POKY_TARBALL)
             if not os.path.exists(bin_dir):
@@ -260,13 +267,15 @@ def pub_eclipse(EDIR, PDIR):
             os.system("mkdir -p %s" %target_dir)
             source_dir = os.path.join(EDIR, name)
             filelist = get_list(source_dir)
-            found = filter(lambda x: 'archive' in x, filelist).pop()
+            foo = [ x for x in filelist if "md5sum" not in x ]
+            found = filter(lambda x: 'archive.zip' in x, foo).pop()
             source = os.path.join(EDIR, name, found)
             target = os.path.join(target_dir, found)
             print "Source: %s" %source
             print "Target: %s" %target
             copyfile(source, target)
             os.chdir(target_dir)
+            print "Unzipping %s" %found
             os.system("unzip -o '%s'" %found)
             os.system("rm -vf %s" %found)
             print
@@ -344,12 +353,28 @@ def publish_adt(rel_id, rel_type, opts):
     return
 
 if __name__ == '__main__':
-    
+
     os.system("clear")
     print
-   
-    VHOSTS = "/srv/www/vhosts"
+
+    logfile = 'staging.log'
+    try:
+        os.remove(logfile)
+    except OSError:
+        pass
+
+    logging.basicConfig(format='%(levelname)s:%(message)s',filename=logfile,level=logging.INFO)
+
+    # Root path on the new AB cluster is /srv/autobuilder. Old cluster still uses /srv/www/vhosts.
+    # Will keep this commented out, but handy, until I get around to adding a swtich to pass in a
+    # path override or a dynamic check for where things live.
+    #VHOSTS = "/srv/www/vhosts"
+    VHOSTS = "/srv/autobuilder"
     AB_BASE = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub/releases")
+
+    # On new cluster, we ONLY use downloads dir for eclipse-plugins now. We no
+    # longer sync the staged release to downloads. But we still need this stuff
+    # for eclipse.
     DL_DIR = os.path.join(VHOSTS, "downloads.yoctoproject.org/releases")
     DL_BASE = os.path.join(DL_DIR, "/releases/yocto")
     ADT_BASE = os.path.join(VHOSTS, "adtrepo.yoctoproject.org")
@@ -380,7 +405,7 @@ if __name__ == '__main__':
                       help="Use when you need to publish the ADT repo to a custom location. i.e. python adtcopy -b yocto-2.0_M1.rc1 -a 1.8+snaphot")
 
     (options, args) = parser.parse_args()
- 
+
     REL_TYPE = ""
     MILESTONE = ""
     if options.poky:
@@ -427,12 +452,12 @@ if __name__ == '__main__':
         print "Build ID is a required argument."
         print "Please use -h or --help for options."
         sys.exit()
-   
+
     if not (RELEASE and RC and REL_ID and REL_TYPE):
         print "Can't determine the release type. Check your args."
         print "You gave me: %s" %options.build
         sys.exit()
-    
+
     print "RC_DIR: %s" %RC_DIR
     print "RELEASE: %s" %RELEASE
     print "RC: %s" %RC
@@ -454,40 +479,59 @@ if __name__ == '__main__':
 
     # For all releases:
     # 1) Rsync the rc candidate to a staging dir where all work happens
+    logging.info('Start rsync.')
+    print "Doing the rsync for the staging directory."
     sync_it(RC_SOURCE, RELEASE_DIR, UNLOVED)
-    
+    logging.info('Successful.')
+
     # 2) Convert the symlinks in build-appliance dir.
     print "Converting the build-appliance symlink."
+    logging.info('Converting build-appliance symlink.')
     convert_symlinks(BUILD_APP_DIR)
+    logging.info('Successful.')
 
     # 3) In machines dir, convert the symlinks, delete the cruft
     print "Cleaning up the machines dirs, converting symlinks."
+    logging.info('Machines dir cleanup started.')
     dirlist = get_list(MACHINES)
     for dirname in dirlist:
         dirname = os.path.join(MACHINES, dirname)
+        logging.info('Converting symlinks in %s' %dirname)
         convert_symlinks(dirname)
+        logging.info('Successful.')
+        logging.info('Nuking cruft in %s' %dirname)
         nuke_cruft(dirname, CRUFT_LIST)
+        logging.info('Successful.')
     print "Generating fresh md5sums."
+    logging.info('Generating fresh md5sums.')
     gen_md5sum(MACHINES)
-    
+    logging.info('Successful.')
+
     # For major and point releases
     if REL_TYPE == "major" or REL_TYPE == "point":
         # 4) Fix up the eclipse and poky tarballs
         print "Cleaning up the eclipse, poky and other tarballs."
+        logging.info('Fixing tarballs.')
         fix_tarballs()
 
         # 5) Publish the eclipse stuff
         print "Publishing the eclipse plugins."
+        logging.info('Publishing eclipse plugins.')
         pub_eclipse(ECLIPSE_DIR, PLUGIN_DIR)
+        logging.info('Successful.')
 
         # 6) Make the bsps
         print "Generating the BSP tarballs."
+        logging.info('Generating BSP tarballs.')
         make_bsps(BSP_LIST, BSP_DIR)
+        logging.info('Successful.')
 
         # 7) Generate the master md5sum file for the release (for all releases)
         print "Generating the master md5sum table."
+        logging.info('Generating the master md5sum table.')
         gen_rel_md5(RELEASE_DIR, REL_MD5_FILE)
-    
+        logging.info('Successful.')
+
     # 8) Publish the ADT repo. The default is NOT to publish the ADT. The ADT
     # is deprecated as of 2.1_M1. However, we need to retain backward
     # compatability for point releases, etc. We do this step after all the other
@@ -495,9 +539,11 @@ if __name__ == '__main__':
     # files deleted, and md5sums generated.
     #
     if options.pub_adt:
+        logging.info('Publishing the ADT repo.')
         if options.adt_dir:
             print "Publishing the ADT repo using custom dir %s" %options.adt_dir
             publish_adt(REL_ID, REL_TYPE, options.adt_dir)
         else:
             print "Publishing ADT repo."
             publish_adt(REL_ID, REL_TYPE, "")
+        logging.info('Successful.')
