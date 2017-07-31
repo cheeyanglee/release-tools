@@ -51,8 +51,8 @@ def sync_it(source, target, exclude_list):
         for i in range(1, length):
             exclude = exclude + " " + "--exclude=" + os.path.join(RELEASE_DIR, exclude_list[i])
         print "Exclude: %s" %exclude
-        command = "rsync -avrl " + exclude + source + " " + target
-        os.system("rsync -avrl --exclude=deb --exclude=rpm --exclude=ptest --exclude=adt-installer-QA '%s' '%s'" %(source, target))
+        command = 'rsync -avrl ' + str(exclude) + " " + str(source) + " " + str(target)
+        os.system(command)
     else:
         os.system("rsync -avrl '%s' '%s'" %(source, target))
     print
@@ -219,7 +219,7 @@ def make_bsps(bsp_list, bsp_dir):
             copyfile(poky_blob, target)
             os.chdir(dirname)
             print "Unpacking poky tarball."
-            os.system("tar jxf %s" %POKY_TARBALL
+            os.system("tar jxf %s" %POKY_TARBALL")
             shutil.move(blob_dir, new_dir)
             os.remove(POKY_TARBALL)
             if not os.path.exists(bin_dir):
