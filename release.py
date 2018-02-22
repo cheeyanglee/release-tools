@@ -219,7 +219,7 @@ def make_bsps(bsp_list, bsp_dir):
             copyfile(poky_blob, target)
             os.chdir(dirname)
             print "Unpacking poky tarball."
-            os.system("tar jxf %s" %POKY_TARBALL")
+            os.system("tar jxf %s" %POKY_TARBALL)
             shutil.move(blob_dir, new_dir)
             os.remove(POKY_TARBALL)
             if not os.path.exists(bin_dir):
