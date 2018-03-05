@@ -68,7 +68,8 @@ if __name__ == '__main__':
     os.system("clear")
     print
 
-    VHOSTS = "/srv/www/vhosts"
+    VHOSTS = "/srv/autobuilder"     # yocto.io cluster uses this path
+    #VHOSTS = "/srv/www/vhosts"     # "old cluster uses this path
     AB_BASE = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub/releases")
     DL_BASE = os.path.join(VHOSTS, "downloads.yoctoproject.org/releases/yocto")
 
