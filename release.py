@@ -2,7 +2,7 @@
 Created on Jan 7, 2016
 
 __author__ = "Tracy Graydon"
-__copyright__ = "Copyright 2016, 2017 Intel Corp."
+__copyright__ = "Copyright 2016-2018 Intel Corp."
 __credits__ = ["Tracy Graydon"]
 __license__ = "GPL"
 __version__ = "2.0"
@@ -12,6 +12,7 @@ __email__ = "tracy.graydon@intel.com"
 
 import logging
 import os
+import socket
 import optparse
 import sys
 import hashlib
@@ -352,6 +353,20 @@ def publish_adt(rel_id, rel_type, opts):
         sync_it(IPK_DIR, ADT_IPK, "")
     return
 
+def where_am_i():
+    abhost = socket.getfqdn()
+    print "abhost: %s" %abhost
+    cluster = split_thing(abhost, ".")[-1]
+    if cluster == "org":
+        VHOSTS = "/srv/www/vhosts"
+    elif cluster == "io":
+        VHOSTS = "/srv/autobuilder"
+    else:
+        print "We're lost. Check the host name being returned by system. If it doesn't end in .org or .io, we need to accommodate that."
+        sys.exit()
+    return VHOSTS
+
+
 if __name__ == '__main__':
 
     os.system("clear")
@@ -365,16 +380,12 @@ if __name__ == '__main__':
 
     logging.basicConfig(format='%(levelname)s:%(message)s',filename=logfile,level=logging.INFO)
 
-    # Root path on the new AB cluster is /srv/autobuilder. Old cluster still uses /srv/www/vhosts.
-    # Will keep this commented out, but handy, until I get around to adding a swtich to pass in a
-    # path override or a dynamic check for where things live.
-    #VHOSTS = "/srv/www/vhosts"
-    VHOSTS = "/srv/autobuilder"
-    AB_BASE = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub/releases")
+    # We use different paths on the different AB clusters. Figure out what cluster we are on and
+    # set the paths accordingly. Root path on the yocto.io AB cluster is /srv/autobuilder. For
+    # "old" cluster, it's /srv/www/vhosts.
+    VHOSTS = where_am_i()
 
-    # On new cluster, we ONLY use downloads dir for eclipse-plugins now. We no
-    # longer sync the staged release to downloads. But we still need this stuff
-    # for eclipse.
+    AB_BASE = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub/releases")
     DL_DIR = os.path.join(VHOSTS, "downloads.yoctoproject.org/releases")
     DL_BASE = os.path.join(DL_DIR, "/releases/yocto")
     ADT_BASE = os.path.join(VHOSTS, "adtrepo.yoctoproject.org")
