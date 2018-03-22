@@ -39,33 +39,12 @@ def sanity_check(source, target):
        sys.exit()
     return
 
-def sync_it(source, target, exclude_list):
+def sync_it(source, target):
     print "Syncing %s to %s" %(source, target)
     sanity_check(source, target)
     source = source + "/"
-    if exclude_list:
-        exclusions = ['--exclude=%s' % x.strip() for x in exclude_list]
-        print "Exclusions: %s" %exclusions
-        print
-        exclude = "--exclude=" + os.path.join(RELEASE_DIR, exclude_list[0])
-        length = len(exclude_list)
-        for i in range(1, length):
-            exclude = exclude + " " + "--exclude=" + os.path.join(RELEASE_DIR, exclude_list[i])
-        print "Exclude: %s" %exclude
-        command = 'rsync -avrl ' + str(exclude) + " " + str(source) + " " + str(target)
-        os.system(command)
-    else:
-        os.system("rsync -avrl '%s' '%s'" %(source, target))
+    os.system("rsync -avrl '%s' '%s'" %(source, target))
     print
-    return
-
-def purge_unloved():
-    print
-    print "Purging unwanted directories..."
-    for target in UNLOVED:
-        target = target.rstrip()
-        print "Deleting: %s/%s" %(RELEASE_DIR, target)
-        os.system('rm -rf %s/%s' %(RELEASE_DIR, target))
     return
 
 def get_list(dirname):
@@ -390,8 +369,6 @@ if __name__ == '__main__':
     DL_BASE = os.path.join(DL_DIR, "/releases/yocto")
     ADT_BASE = os.path.join(VHOSTS, "adtrepo.yoctoproject.org")
 
-    # List of the directories we delete from all releases
-    UNLOVED = ['rpm', 'deb', 'ptest', 'adt-installer-QA']
     # List of the files in machines directories that we delete from all releases
     CRUFT_LIST = ['*.md5sum', '*.tar.gz', '*.iso']
     # List of the platforms for which we want to generate BSP tarballs. Major and point releases.
@@ -492,7 +469,7 @@ if __name__ == '__main__':
     # 1) Rsync the rc candidate to a staging dir where all work happens
     logging.info('Start rsync.')
     print "Doing the rsync for the staging directory."
-    sync_it(RC_SOURCE, RELEASE_DIR, UNLOVED)
+    sync_it(RC_SOURCE, RELEASE_DIR)
     logging.info('Successful.')
 
     # 2) Convert the symlinks in build-appliance dir.
