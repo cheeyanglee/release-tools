@@ -301,37 +301,6 @@ def gen_rel_md5(dirname, md5_file):
     f.close()
     return
 
-def publish_adt(rel_id, rel_type, opts):
-    if opts:
-        ADT_DIR = os.path.join(ADT_BASE, opts)
-    else:
-        if rel_type == "milestone":
-            chunks = split_thing(rel_id, "_")
-            id_thing = float(chunks[0])
-            id_thing = id_thing - 0.1
-            rel_id = str(id_thing) + "+" + "snapshot"
-        ADT_DIR = os.path.join(ADT_BASE, rel_id)
-    print "ADT_DIR: %s" %ADT_DIR
-    if os.path.exists(ADT_DIR):
-        print "ADT_DIR %s EXISTS! Refusing to clobber!" %ADT_DIR
-        sys.exit()
-    else:
-        ADT_ROOTFS = os.path.join(ADT_DIR, "rootfs")
-        ADT_IPK = os.path.join(ADT_DIR, "adt-ipk")
-        QEMU_DIR = os.path.join(MACHINES, "qemu")
-        IPK_DIR = os.path.join(RELEASE_DIR, "ipk")
-        os.mkdir(ADT_DIR)
-        os.mkdir(ADT_ROOTFS)
-        dirlist = get_list(QEMU_DIR)
-
-        for dirname in dirlist:
-            QEMU_SRC = os.path.join(QEMU_DIR, dirname)
-            QEMU_TARGET = os.path.join(ADT_ROOTFS, dirname)
-            print "QEMU_SRC: %s" %QEMU_SRC
-            sync_it(QEMU_SRC, QEMU_TARGET, "")
-        sync_it(IPK_DIR, ADT_IPK, "")
-    return
-
 def where_am_i():
     abhost = socket.getfqdn()
     print "abhost: %s" %abhost
@@ -386,11 +355,6 @@ if __name__ == '__main__':
     parser.add_option("-p", "--poky-ver",
                       type="string", dest="poky",
                       help="Required for Major and Point releases. i.e. 14.0.0")
-    parser.add_option("-a", action="store_true", dest="pub_adt",
-                      help="Publish an ADT repo for the release. Default is NOT to publish.")
-    parser.add_option("-d", "--adt-dir",
-                      type="string", dest="adt_dir",
-                      help="Use when you need to publish the ADT repo to a custom location. i.e. python adtcopy -b yocto-2.0_M1.rc1 -a 1.8+snaphot")
 
     (options, args) = parser.parse_args()
 
@@ -518,20 +482,4 @@ if __name__ == '__main__':
         print "Generating the master md5sum table."
         logging.info('Generating the master md5sum table.')
         gen_rel_md5(RELEASE_DIR, REL_MD5_FILE)
-        logging.info('Successful.')
-
-    # 8) Publish the ADT repo. The default is NOT to publish the ADT. The ADT
-    # is deprecated as of 2.1_M1. However, we need to retain backward
-    # compatability for point releases, etc. We do this step after all the other
-    #  stuff because we want the symlinks to have been converted, extraneous
-    # files deleted, and md5sums generated.
-    #
-    if options.pub_adt:
-        logging.info('Publishing the ADT repo.')
-        if options.adt_dir:
-            print "Publishing the ADT repo using custom dir %s" %options.adt_dir
-            publish_adt(REL_ID, REL_TYPE, options.adt_dir)
-        else:
-            print "Publishing ADT repo."
-            publish_adt(REL_ID, REL_TYPE, "")
         logging.info('Successful.')
