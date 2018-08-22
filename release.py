@@ -21,6 +21,7 @@ import os.path
 import shutil
 from shutil import rmtree, copyfile
 from subprocess import call
+from where_am_i import where_am_i
 
 def sanity_check(source, target):
     if not os.path.exists(source):
@@ -301,19 +302,6 @@ def gen_rel_md5(dirname, md5_file):
     f.close()
     return
 
-def where_am_i():
-    abhost = socket.getfqdn()
-    print "abhost: %s" %abhost
-    cluster = split_thing(abhost, ".")[-1]
-    if cluster == "org":
-        VHOSTS = "/srv/www/vhosts"
-    elif cluster == "io":
-        VHOSTS = "/srv/autobuilder"
-    else:
-        print "We're lost. Check the host name being returned by system. If it doesn't end in .org or .io, we need to accommodate that."
-        sys.exit()
-    return VHOSTS
-
 
 if __name__ == '__main__':
 
@@ -330,7 +318,7 @@ if __name__ == '__main__':
 
     # We use different paths on the different AB clusters. Figure out what cluster we are on and
     # set the paths accordingly. Root path on the yocto.io AB cluster is /srv/autobuilder. For
-    # "old" cluster, it's /srv/www/vhosts.
+    # "old" cluster, it's /srv/www/vhosts. where_am_i figures it out for us.
     VHOSTS = where_am_i()
 
     AB_BASE = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub/releases")
