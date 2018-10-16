@@ -19,9 +19,6 @@ def where_am_i():
         VHOSTS = "/srv/autobuilder"
     if "autobuilder.yoctoproject.org" in abhost:
         VHOSTS = "/srv/www/vhosts"
-    else:
-        print "We're lost. Are you on an autobuilder host system? This is not intended to work elsewhere. You'll need to hack your path accordingly.\n"
-        sys.exit()
     return VHOSTS
 
 if __name__ == '__main__':
