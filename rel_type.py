@@ -74,5 +74,5 @@ if __name__ == '__main__':
     RC_DIR = VARS['RC_DIR']
     REL_TYPE = VARS['REL_TYPE']
 
-    for thing in ['RC_DIR', 'RELEASE', 'REL_TYPE', 'RC', 'RELEASE']:
+    for thing in ['RC_DIR', 'RELEASE', 'REL_TYPE', 'RC', 'REL_ID']:
         print "%s: %s" %(thing, VARS[thing])
