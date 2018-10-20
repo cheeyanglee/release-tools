@@ -20,6 +20,10 @@ import pygit2
 from pygit2 import Repository, RemoteCallbacks, clone_repository
 from pygit2 import GIT_SORT_TOPOLOGICAL
 
+KEY = "/home/pokybuild/.ssh/id_rsa"
+KEY_PUB = "/home/pokybuild/.ssh/id_rsa.pub"
+SECRET = ""
+
 class MyRemoteCallbacks(pygit2.RemoteCallbacks):
     def credentials(self, url, username_from_url, allowed_types):
         if allowed_types & pygit2.credentials.GIT_CREDTYPE_SSH_KEY:
@@ -28,9 +32,6 @@ class MyRemoteCallbacks(pygit2.RemoteCallbacks):
             return None
 
 def main(hash):
-    KEY = "/home/pokybuild/.ssh/id_rsa"
-    KEY_PUB = "/home/pokybuild/.ssh/id_rsa.pub"
-    SECRET = ""
     repo_url = 'ssh://git@git.yoctoproject.org/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
