@@ -40,10 +40,9 @@ def get_list(dirname):
     dirlist.sort()
     return dirlist
 
-def split_thing(thing,st(dirname):
-    dirlist = os.listdir(dirname)
-    dirlist.sort()
-    return dirlist
+def split_thing(thing, marker):
+    filebits = thing.split(marker)
+    return filebits
 
 def rejoin_thing(thing, marker):
     filebits = marker.join(thing)
