@@ -28,10 +28,10 @@ def where_am_i():
     elif "autobuilder.yoctoproject.org" in abhost:
         VHOSTS = "/srv/www/vhosts"
     else:
-        print "I don't know where we are, so I am going to guess..."
-        # Uncomment this if you want to use /srv/www/vhosts as the VHOST dir. It's useful for testing.
-        #VHOSTS = "/srv/www/vhosts"
-        VHOSTS = "/srv/autobuilder"
+        print "I don't recognize this host, so defaulting to /srv/www/vhosts"
+        # Uncomment this if you want to use /srv/autobuilder as the VHOSTS dir. It's useful for testing.
+        #VHOSTS = "/srv/autobuilder"
+        VHOSTS = "/srv/www/vhosts"
         print "Setting VHOSTS to %s" %VHOSTS
     AB_HOME = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub") # uninative release (uninative.py) uses this
     AB_BASE = os.path.join(AB_HOME, "releases") # all RC candidates live here
