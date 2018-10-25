@@ -2,7 +2,7 @@
 Created on Aug 16, 2017
 
 __author__ = "Tracy Graydon"
-__copyright__ = "Copyright 2017 Intel Corp."
+__copyright__ = "Copyright 2017-2018 Intel Corp."
 __credits__ = ["Tracy Graydon"]
 __license__ = "GPL"
 __version__ = "2.0"
@@ -10,68 +10,16 @@ __maintainer__ = "Tracy Graydon"
 __email__ = "tracy.graydon@intel.com"
 '''
 
-import logging
 import os
 import optparse
 import sys
 import hashlib
-import glob
 import os.path
 import fnmatch
 import shutil
-from shutil import rmtree, copyfile
-from subprocess import call
+from shutil import rmtree
+from utils import where_am_i, sanity_check, split_thing, rejoin_thing, get_md5sum, gen_md5sum
 
-def sanity_check(source, target):
-    if not os.path.exists(source):
-       print
-       print "SOURCE dir %s does NOT EXIST." %source
-       print
-       sys.exit()
-    if not os.listdir(source):
-       print
-       print "SOURCE dir %s is EMPTY" %source
-       print
-    if os.path.exists(target):
-       print
-       print "I can't let you do it, Jim. The TARGET directory %s exists." %target
-       print
-       sys.exit()
-    return
-
-def split_thing(thing, marker):
-    filebits = thing.split(marker)
-    return filebits
-
-def rejoin_thing(thing, marker):
-    filebits = marker.join(thing)
-    return filebits
-
-def get_md5sum(path, blocksize = 4096):
-    f = open(path, 'rb')
-    md5sum = hashlib.md5()
-    buffer = f.read(blocksize)
-    while len(buffer) > 0:
-        md5sum.update(buffer)
-        buffer = f.read(blocksize)
-    f.close()
-    return md5sum.hexdigest()
-
-def gen_md5sum(dirname):
-    print
-    print "Generating md5sums for files in %s...." %dirname
-    for root, dirs, files in os.walk(dirname, topdown=True):
-        for name in files:
-            filename = (os.path.join(root, name))
-            if not os.path.islink(filename):
-                md5sum = get_md5sum(filename)
-                md5_file = ".".join([filename, 'md5sum'])
-                md5str = md5sum + " " + name
-                print md5str
-                f = open(md5_file, 'w')
-                f.write(md5str)
-                f.close()
-    return
 
 def release_type(build_id):
     RC = split_thing(build_id, ".")[-1].lower()
@@ -123,22 +71,28 @@ if __name__ == '__main__':
     os.system("clear")
     print
 
-    VHOSTS = "/srv/www/vhosts"
-    AB_BASE = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub/releases")
-    DL_BASE = os.path.join(VHOSTS, "downloads.yoctoproject.org/releases/yocto")
-
     parser = optparse.OptionParser()
     parser.add_option("-i", "--build-id",
                       type="string", dest="build",
                       help="Required. Release candidate name including rc#. i.e. yocto-meta-intel-8.1-rocko-2.4.2.rc1, etc.")
-
     (options, args) = parser.parse_args()
-
     if not (options.build):
         print "You must specify the RC name. i.e. yocto-meta-intel-6.1-rocko-2.4.2.rc1"
         print "Please use -h or --help for options."
         sys.exit()
     
+    PATH_VARS = where_am_i()
+    VHOSTS = PATH_VARS['VHOSTS']
+    AB_HOME = PATH_VARS['AB_HOME']
+    AB_BASE = PATH_VARS['AB_BASE']
+    DL_HOME = PATH_VARS['DL_HOME']
+    DL_BASE = PATH_VARS['DL_BASE']
+    print "VHOSTS: %s" %VHOSTS
+    print "AB_HOME: %s" %AB_HOME
+    print "AB_BASE: %s" %AB_BASE
+    print "DL_HOME: %s" %DL_HOME
+    print "DL_BASE: %s" %DL_BASE
+
     VARS = release_type(options.build)
 
     RC = VARS['RC']
@@ -161,7 +115,7 @@ if __name__ == '__main__':
 
     print "Creating the staging directory."
     if not os.path.exists(RELEASE_DIR):
-        print "Pretending to create the release dir."
+        print "Creating the release dir."
         os.mkdir(RELEASE_DIR)
     else:
         print "Staging dir exists! Quitting."
