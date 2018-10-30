@@ -16,9 +16,6 @@ import socket
 import sys
 import hashlib
 import glob
-#import shutil
-#from shutil import rmtree, copyfile
-#from subprocess import call
 
 def where_am_i():
     abhost = socket.getfqdn()
