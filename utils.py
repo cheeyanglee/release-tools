@@ -15,6 +15,10 @@ import os.path
 import socket
 import sys
 import hashlib
+import glob
+#import shutil
+#from shutil import rmtree, copyfile
+#from subprocess import call
 
 def where_am_i():
     abhost = socket.getfqdn()
@@ -66,21 +70,11 @@ def sanity_check(source, target):
        sys.exit()
     return
 
-def sync_it(source, target, exclude_list):
+def sync_it(source, target):
     print "Syncing %s to %s" %(source, target)
+    sanity_check(source, target)
     source = source + "/"
-    if exclude_list:
-        exclusions = ['--exclude=%s' % x.strip() for x in exclude_list]
-        print "Exclusions: %s" %exclusions
-        print
-        exclude = "--exclude=" + exclude_list[0]
-        length = len(exclude_list)
-        for i in range(1, length):
-            exclude = exclude + " " + "--exclude=" + exclude_list[i]
-        command = 'rsync -avrl ' + str(exclude) + " " + str(source) + " " + str(target)
-        os.system(command)
-    else:
-        os.system("rsync -avrl '%s' '%s'" %(source, target))
+    os.system("rsync -avrl '%s' '%s'" %(source, target))
     print
     return
 
@@ -118,4 +112,29 @@ def gen_md5sum(dirname):
                 f = open(md5_file, 'w')
                 f.write(md5str)
                 f.close()
+    return
+
+def gen_rel_md5(dirname, md5_file):
+    os.chdir(RELEASE_DIR)
+    print "Generating master md5sum file %s" %md5_file
+    f = open(md5_file, 'w')
+    for root, dirs, files in os.walk(dirname, topdown=True):
+        for name in files:
+            filename = (os.path.join(root, name))
+            ext = split_thing(name, ".")[-1]
+            if not (ext == "md5sum" or ext == "txt"):
+                relpath = split_thing(filename, RELEASE_DIR)
+                relpath.pop(0)
+                relpath = relpath[0]
+                relpath = split_thing(relpath, "/")
+                relpath.pop(0)
+                relpath = rejoin_thing(relpath, "/")
+                relpath = "./" + relpath
+                print relpath
+                md5sum = get_md5sum(filename)
+                print md5sum
+                md5str = md5sum + " " + relpath
+                print md5str
+                f.write(md5str + '\n')
+    f.close()
     return
