@@ -112,7 +112,7 @@ def gen_md5sum(dirname):
     return
 
 def gen_rel_md5(dirname, md5_file):
-    os.chdir(RELEASE_DIR)
+    os.chdir(dirname)
     print "Generating master md5sum file %s" %md5_file
     f = open(md5_file, 'w')
     for root, dirs, files in os.walk(dirname, topdown=True):
@@ -120,7 +120,7 @@ def gen_rel_md5(dirname, md5_file):
             filename = (os.path.join(root, name))
             ext = split_thing(name, ".")[-1]
             if not (ext == "md5sum" or ext == "txt"):
-                relpath = split_thing(filename, RELEASE_DIR)
+                relpath = split_thing(filename, dirname)
                 relpath.pop(0)
                 relpath = relpath[0]
                 relpath = split_thing(relpath, "/")
