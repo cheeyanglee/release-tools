@@ -1,0 +1,7 @@
+For Intel processor-specific security information please visit https://software.intel.com/en-us/side-channel-security-support
+ 
+Method information on Intel's Security Center site:
+https://security-center.intel.com/advisory.aspx?intelid=INTEL-SA-00088&languageid=en-fr
+ 
+Intel Security Center:
+https://security-center.intel.com/default.aspx
