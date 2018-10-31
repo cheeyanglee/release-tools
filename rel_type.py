@@ -17,6 +17,7 @@ import os.path
 from utils import where_am_i, check_rc, split_thing, rejoin_thing
 
 def release_type(build_id):
+    MILESTONE = "NONE"
     build_id = build_id.lower()
     RC = split_thing(build_id, ".")[-1]
     foo = RC.find("rc")
@@ -39,6 +40,7 @@ def release_type(build_id):
             REL_TYPE = "major"
     else:
         REL_TYPE = "milestone"
+        MILESTONE = relstring.pop()
         
     # This is here to catch anything that slips by or is a result of something unexpected
     # in all the splitting that happens above.
@@ -48,7 +50,7 @@ def release_type(build_id):
         sys.exit()
 
     # We obviously generate these values above as part of determining the release type, so we we just return them since we almost always need these anyway.
-    var_dict = {'RC': RC, 'RELEASE': RELEASE, 'REL_ID': REL_ID, 'RC_DIR': RC_DIR, 'REL_TYPE': REL_TYPE};
+    var_dict = {'RC': RC, 'RELEASE': RELEASE, 'REL_ID': REL_ID, 'RC_DIR': RC_DIR, 'REL_TYPE': REL_TYPE, 'MILESTONE': MILESTONE};
     return var_dict
 
 if __name__ == '__main__':
@@ -73,6 +75,7 @@ if __name__ == '__main__':
     REL_ID = VARS['REL_ID']
     RC_DIR = VARS['RC_DIR']
     REL_TYPE = VARS['REL_TYPE']
+    MILESTONE = VARS['MILESTONE']
 
-    for thing in ['RC_DIR', 'RELEASE', 'REL_TYPE', 'RC', 'REL_ID']:
+    for thing in ['RC_DIR', 'RELEASE', 'REL_TYPE', 'RC', 'RELEASE', 'MILESTONE']:
         print "%s: %s" %(thing, VARS[thing])
