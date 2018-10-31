@@ -21,50 +21,13 @@ import os.path
 import shutil
 from shutil import rmtree, copyfile
 from subprocess import call
-from where_am_i import where_am_i
-
-def sanity_check(source, target):
-    if not os.path.exists(source):
-       print
-       print "SOURCE dir %s does NOT EXIST." %source
-       print
-       sys.exit()
-    if not os.listdir(source):
-       print
-       print "SOURCE dir %s is EMPTY" %source
-       print
-    if os.path.exists(target):
-       print
-       print "I can't let you do it, Jim. The TARGET directory %s exists." %target
-       print
-       sys.exit()
-    return
-
-def sync_it(source, target):
-    print "Syncing %s to %s" %(source, target)
-    sanity_check(source, target)
-    source = source + "/"
-    os.system("rsync -avrl '%s' '%s'" %(source, target))
-    print
-    return
-
-def get_list(dirname):
-    dirlist = os.listdir(dirname)
-    dirlist.sort()
-    return dirlist
-
-def split_thing(thing, marker):
-    filebits = thing.split(marker)
-    return filebits
-
-def rejoin_thing(thing, marker):
-    filebits = marker.join(thing)
-    return filebits
+from utils import where_am_i, sanity_check, sync_it, get_list, split_thing, rejoin_thing, get_md5sum, gen_md5sum, gen_rel_md5
+from rel_type import release_type
 
 def fix_tarballs():
     print
-    print "Repackaging poky and eclipse tarballs...."
-    logging.info('Repackaging poky and eclipse tarballs.')
+    print "Repackaging the release tarballs."
+    logging.info('Repackaging the release tarballs.')
     os.chdir(RELEASE_DIR)
     os.mkdir(TARBALL_DIR)
     os.system("mv %s/*.tar.bz2 %s" %(RELEASE_DIR, TARBALL_DIR))
@@ -76,20 +39,20 @@ def fix_tarballs():
         logging.info('Repackaging %s' %blob)
         chunks = split_thing(blob, ".")
         filename = chunks[0]
-        basename = split_thing(filename, "-")
-        index = len(basename)-1
-        basename[index] = "-".join([BRANCH, POKY_VER])
-        new_name = rejoin_thing(basename, "-")
-        chunks[0] = new_name
+        dirname = split_thing(filename, "-")
+        dirname.pop()
+        dirname = rejoin_thing(dirname, "-")
+        basename = "-".join([dirname, BRANCH, POKY_VER])
+        chunks[0] = basename
         new_blob = rejoin_thing(chunks, ".")
         print "New Tarball: %s" %new_blob
         logging.info('New blob is %s' %new_blob)
         os.system("tar jxf %s" %blob)
-        os.system("mv %s %s" %(filename, new_name))
-        os.system("rm -rf %s/.git*" %new_name)
+        os.system("mv %s %s" %(dirname, basename))
+        os.system("rm -rf %s/.git*" %basename)
         os.remove(blob)
-        os.system("tar jcf %s %s" %(new_blob, new_name))
-        rmtree(new_name)
+        os.system("tar jcf %s %s" %(new_blob, basename))
+        rmtree(basename)
         os.symlink(new_blob, blob)
         os.system("md5sum %s > %s.md5sum" %(new_blob, new_blob))
         logging.info('Successful.')
@@ -101,16 +64,6 @@ def fix_tarballs():
     logging.info('Successful.')
     print
     return
-
-def get_md5sum(path, blocksize = 4096):
-    f = open(path, 'rb')
-    md5sum = hashlib.md5()
-    buffer = f.read(blocksize)
-    while len(buffer) > 0:
-        md5sum.update(buffer)
-        buffer = f.read(blocksize)
-    f.close()
-    return md5sum.hexdigest()
 
 def convert_symlinks(dirname):
     thing = os.path.split(dirname)[1]
@@ -262,47 +215,6 @@ def pub_eclipse(EDIR, PDIR):
             print
     return
 
-def gen_md5sum(dirname):
-    print
-    print "Generating md5sums for files in %s...." %dirname
-    for root, dirs, files in os.walk(dirname, topdown=True):
-        for name in files:
-            filename = (os.path.join(root, name))
-            md5sum = get_md5sum(filename)
-            md5_file = ".".join([filename, 'md5sum'])
-            md5str = md5sum + " " + name
-            print md5str
-            f = open(md5_file, 'w')
-            f.write(md5str)
-            f.close()
-    return
-
-def gen_rel_md5(dirname, md5_file):
-    os.chdir(RELEASE_DIR)
-    print "Generating master md5sum file %s" %md5_file
-    f = open(md5_file, 'w')
-    for root, dirs, files in os.walk(dirname, topdown=True):
-        for name in files:
-            filename = (os.path.join(root, name))
-            ext = split_thing(name, ".")[-1]
-            if not (ext == "md5sum" or ext == "txt"):
-                relpath = split_thing(filename, RELEASE_DIR)
-                relpath.pop(0)
-                relpath = relpath[0]
-                relpath = split_thing(relpath, "/")
-                relpath.pop(0)
-                relpath = rejoin_thing(relpath, "/")
-                relpath = "./" + relpath
-                print relpath
-                md5sum = get_md5sum(filename)
-                print md5sum
-                md5str = md5sum + " " + relpath
-                print md5str
-                f.write(md5str + '\n')
-    f.close()
-    return
-
-
 if __name__ == '__main__':
 
     os.system("clear")
@@ -313,19 +225,20 @@ if __name__ == '__main__':
         os.remove(logfile)
     except OSError:
         pass
-
     logging.basicConfig(format='%(levelname)s:%(message)s',filename=logfile,level=logging.INFO)
 
-    # We use different paths on the different AB clusters. Figure out what cluster we are on and
-    # set the paths accordingly. Root path on the yocto.io AB cluster is /srv/autobuilder. For
-    # "old" cluster, it's /srv/www/vhosts. where_am_i figures it out for us.
-    VHOSTS = where_am_i()
-
-    AB_BASE = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub/releases")
-    DL_DIR = os.path.join(VHOSTS, "downloads.yoctoproject.org/releases")
-    DL_BASE = os.path.join(DL_DIR, "/releases/yocto")
-    ADT_BASE = os.path.join(VHOSTS, "adtrepo.yoctoproject.org")
-
+    PATH_VARS = where_am_i()
+    VHOSTS = PATH_VARS['VHOSTS']
+    AB_HOME = PATH_VARS['AB_HOME']
+    AB_BASE = PATH_VARS['AB_BASE']
+    DL_HOME = PATH_VARS['DL_HOME']
+    DL_BASE = PATH_VARS['DL_BASE']
+    print "VHOSTS: %s" %VHOSTS
+    print "AB_HOME: %s" %AB_HOME
+    print "AB_BASE: %s" %AB_BASE
+    print "DL_HOME: %s" %DL_HOME
+    print "DL_BASE: %s" %DL_BASE
+   
     # List of the files in machines directories that we delete from all releases
     CRUFT_LIST = ['*.md5sum', '*.tar.gz', '*.iso']
     # List of the platforms for which we want to generate BSP tarballs. Major and point releases.
@@ -343,11 +256,8 @@ if __name__ == '__main__':
     parser.add_option("-p", "--poky-ver",
                       type="string", dest="poky",
                       help="Required for Major and Point releases. i.e. 14.0.0")
-
     (options, args) = parser.parse_args()
 
-    REL_TYPE = ""
-    MILESTONE = ""
     if options.poky:
         POKY_VER = options.poky
     else:
@@ -358,57 +268,26 @@ if __name__ == '__main__':
         BRANCH = ""
 
     if options.build:
-        # Figure out the release name, type of release, and generate some vars, do some basic validation
-        options.build = options.build.lower()
-        RC = split_thing(options.build, ".")[-1]
-        chunks = split_thing(options.build, ".") # i.e. split yocto-2.1_m1.rc1
-        chunks.pop()
-        chunks[1] = chunks[1].upper()
-        RELEASE = rejoin_thing(chunks, ".")  # i.e. yocto-2.1_m1
-        REL_ID = split_thing(RELEASE, "-")[-1].upper()
-        RC_DIR = rejoin_thing([RELEASE, RC], ".")
+        VARS = release_type(options.build)
+        RC = VARS['RC']
+        RELEASE = VARS['RELEASE']
+        REL_ID = VARS['REL_ID']
+        RC_DIR = VARS['RC_DIR']
+        REL_TYPE = VARS['REL_TYPE']
+        MILESTONE = VARS['MILESTONE']
         RC_SOURCE = os.path.join(AB_BASE, RC_DIR)
-        if not os.path.exists(RC_SOURCE):
-            print "%s does not appear to be a valid RC dir. Check your args." %RC_SOURCE
-            sys.exit()
-        relstring = split_thing(REL_ID, "_")
-        if len(relstring) == 1:
-            thing = split_thing(relstring[0], ".")
-            if len(thing) == 3:
-                REL_TYPE = "point"
-            elif len(thing) == 2:
-                REL_TYPE = "major"
-            if options.poky and options.branch:
-                POKY_VER = options.poky
-                BRANCH = options.branch
-            else:
-                print "You can't have a major or point release without a branch and a poky version. Check your args."
-                print "Please use -h or --help for options."
-                sys.exit()
-        else:
-            MILESTONE = relstring.pop()
-            REL_TYPE = "milestone"
+        RELEASE_DIR = os.path.join(AB_BASE, RELEASE)
     else:
         print "Build ID is a required argument."
         print "Please use -h or --help for options."
         sys.exit()
 
-    if not (RELEASE and RC and REL_ID and REL_TYPE):
-        print "Can't determine the release type. Check your args."
-        print "You gave me: %s" %options.build
-        sys.exit()
+    for thing in ['RC_DIR', 'RELEASE', 'RC', 'REL_ID', 'REL_TYPE', 'MILESTONE']:
+        print "%s: %s" %(thing, VARS[thing])
+    print "RC_SOURCE: %s" %RC_SOURCE
+    print "RELEASE_DIR: %s" %RELEASE_DIR
 
-    print "RC_DIR: %s" %RC_DIR
-    print "RELEASE: %s" %RELEASE
-    print "RC: %s" %RC
-    print "REL_ID: %s" %REL_ID
-    print "REL_TYPE: %s" %REL_TYPE
-    if MILESTONE:
-        print "MILESTONE: %s" %MILESTONE
-    print
-
-    PLUGIN_DIR = os.path.join(DL_DIR, "eclipse-plugin", REL_ID)
-    RELEASE_DIR = os.path.join(AB_BASE, RELEASE)
+    PLUGIN_DIR = os.path.join(DL_HOME, "eclipse-plugin", REL_ID)
     MACHINES = os.path.join(RELEASE_DIR, "machines")
     BSP_DIR = os.path.join(RELEASE_DIR, 'bsptarballs')
     TARBALL_DIR = os.path.join(RELEASE_DIR, "tarballs")
@@ -423,6 +302,7 @@ if __name__ == '__main__':
     print "Doing the rsync for the staging directory."
     sync_it(RC_SOURCE, RELEASE_DIR)
     logging.info('Successful.')
+
 
     # 2) Convert the symlinks in build-appliance dir.
     print "Converting the build-appliance symlink."
@@ -466,7 +346,7 @@ if __name__ == '__main__':
         make_bsps(BSP_LIST, BSP_DIR)
         logging.info('Successful.')
 
-        # 7) Generate the master md5sum file for the release (for all releases)
+        # 7) Generate the master md5sum file for the release (for all releases, except milestones)
         print "Generating the master md5sum table."
         logging.info('Generating the master md5sum table.')
         gen_rel_md5(RELEASE_DIR, REL_MD5_FILE)
