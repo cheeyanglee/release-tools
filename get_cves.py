@@ -1,5 +1,5 @@
 '''
-Created on Feb 27, 2018
+Created on Nov 7, 2018
 
 __author__ = "Tracy Graydon"
 __copyright__ = "Copyright 2018, Intel Corp."
@@ -14,7 +14,6 @@ __email__ = "tracy.graydon@intel.com"
 # It creates a fresh clone of the poky repo, and blindly nukes any pre-existing poky
 # repo first, so watch out. It ensures that we have a fresh repo on the correct branch
 # to avoid bogus git logs and subsequently erroneous output. 
-
 
 import os
 import optparse
@@ -99,9 +98,10 @@ if __name__ == '__main__':
         commit_title = raw_message.splitlines()[0]
         if 'CVE' in commit_title:
             commit_id = str(commit.id)
+            #print "%s" %commit_title 
             print "%s: %s" %(commit_id[0:8], commit_title)
             # If you want to include the commit hash, uncomment this one.
             outfile.write("%s: %s\n" %(commit_id[0:8], commit_title))
-            #outfile.write("%s\n" %raw_message.splitlines()[0]
+            #outfile.write("%s\n" %commit_title)
     outfile.close()
     print "DONE!"
