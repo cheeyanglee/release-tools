@@ -17,7 +17,7 @@ import os
 import re
 import sys
 import pygit2
-from pygit2 import Repository, RemoteCallbacks, clone_repository
+from pygit2 import Repository, clone_repository
 from pygit2 import GIT_SORT_TOPOLOGICAL
 
 def main(hash):
