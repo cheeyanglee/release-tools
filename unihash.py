@@ -20,26 +20,15 @@ import pygit2
 from pygit2 import Repository, RemoteCallbacks, clone_repository
 from pygit2 import GIT_SORT_TOPOLOGICAL
 
-KEY = "/home/pokybuild/.ssh/id_rsa"
-KEY_PUB = "/home/pokybuild/.ssh/id_rsa.pub"
-SECRET = ""
-
-class MyRemoteCallbacks(pygit2.RemoteCallbacks):
-    def credentials(self, url, username_from_url, allowed_types):
-        if allowed_types & pygit2.credentials.GIT_CREDTYPE_SSH_KEY:
-            return pygit2.Keypair(username_from_url, KEY_PUB, KEY, SECRET)
-        else:
-            return None
-
 def main(hash):
-    repo_url = 'ssh://git@git.yoctoproject.org/poky'
+    repo_url = 'http://git.yoctoproject.org/git/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
     print "repo_path: %s" %repo_path
     if not os.path.exists(repo_path):
         print "Repo doesn't exist."
-        print "Cloning the poky repo."       
-        repo = clone_repository(repo_url, repo_path, checkout_branch='master', callbacks=MyRemoteCallbacks()) 
+        print "Cloning the poky repo."
+        repo = clone_repository(repo_url, repo_path, checkout_branch='master')
     else:
         print "Found an existing poky repo. Reusing it.\n"
         repo = Repository(repo_path)
@@ -59,7 +48,6 @@ def main(hash):
                     thing = thing.replace(')', '')
                     print thing
             sys.exit()
-
 
 if __name__ == '__main__':
 
