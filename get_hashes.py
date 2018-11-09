@@ -32,7 +32,6 @@ if __name__ == '__main__':
     parser.add_option("-i", "--build-id",
                       type="string", dest="build",
                       help="Required. Release candidate name including rc#. i.e. yocto-2.5.rc1, yocto-2.5_M1.rc3, etc.")
-
     (options, args) = parser.parse_args()
 
     if not options.build:
@@ -50,6 +49,7 @@ if __name__ == '__main__':
         print "%s: %s" %(thing, VARS[thing])
     print "RC_SOURCE: %s" %RC_SOURCE
     print "RELEASE_DIR: %s" %RELEASE_DIR
+    print
 
     HOME = os.getcwd()
     HASH_FILE = ".".join(["HASHES", RELEASE])
