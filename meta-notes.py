@@ -10,7 +10,7 @@ from utils import where_am_i, split_thing, rejoin_thing
 
 
 def get_repo(codename):
-    repo_url = 'https://git.yoctoproject.org/git/meta-intel'
+    repo_url = 'http://git.yoctoproject.org/git/meta-intel'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'meta-intel')
     if os.path.exists(repo_path):
