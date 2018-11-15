@@ -10,7 +10,7 @@ __maintainer__ = "Tracy Graydon"
 __email__ = "tracy.graydon@intel.com"
 '''
 
-''' This script will generate the release notes draft for a given release. There 
+''' This script will generate the release notes draft for a given Yocto release. There 
 are some things that still need to be added manually to the release notes, such as
 Known Issues and New Features and Enchancements. For major releases, we only produce
 the Errata info. The rest is compiled elsewhere. We do not do release notes for milestones.
@@ -43,6 +43,7 @@ def get_bitbake_info(path):
            if "__version__ = " in line:
                BITBAKE_VER = split_thing(line, '"')[1]
     if BITBAKE_VER == "NONE":
+       # Let's do something if we can't determine the BitBake version for some reason.
        print "Can't determine the bitbake version. You'll have to fix that manually."
        BITBAKE_VER = "FIX ME!"  # Later we write this out to the release notes as a reminder to manually fix it.
     return BITBAKE_VER
@@ -187,7 +188,11 @@ if __name__ == '__main__':
     REVISIONS = options.revs
     DEFAULT_TAG = "-".join([BRANCH, POKY_VER])
 
-    RELEASE_NOTES = ".".join(["RELEASE_NOTES", RELEASE])
+    # Note that we append the RELEASENOTES filename with the release it is for. i.e. RELEASENOTES.yocto-2.6
+    # This is to avoid clobbering release notes for other releases that may be happening in parallel.
+    # Drop the appended release name from the respective file when the finalized version gets 
+    # copied into the release directory. i.e. Just RELEASENOTES, not RELEASENOTES.<release>
+    RELEASE_NOTES = ".".join(["RELEASENOTES", RELEASE])
     DL_BASE_URL = "http://downloads.yoctoproject.org/releases/yocto"
     MIRROR_BASE_URL = "http://mirrors.kernel.org/yocto/yocto"
     HOME = os.getcwd()
