@@ -259,7 +259,6 @@ if __name__ == '__main__':
                 #print "%s: %s" %(commit_id[0:8], commit_title)
                 outfile.write("%s\n" %commit_title) 
                 #outfile.write("%s: %s\n" %(commit_id[0:8], commit_title))
-                outfile.write("%s\n" %commit_title)
         print "DONE!"
 
         print "Getting the Fixes for the release."
