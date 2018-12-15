@@ -19,24 +19,38 @@ import hashlib
 import glob
 import os.path
 import shutil
-from shutil import rmtree, copyfile
+import tarfile
+from shutil import rmtree, copy, copyfile, move
 from subprocess import call
 from utils import where_am_i, sanity_check, sync_it, get_list, split_thing, rejoin_thing, get_md5sum, gen_md5sum, gen_rel_md5
 from rel_type import release_type
+
+def make_tarfile(target_blob, source_dir):
+        with tarfile.open(target_blob, "w:bz2") as tar:
+            tar.add(source_dir, arcname=os.path.basename(source_dir))
+        tar.close()
+        return
 
 def fix_tarballs():
     print
     print "Repackaging the release tarballs."
     logging.info('Repackaging the release tarballs.')
     os.chdir(RELEASE_DIR)
-    os.mkdir(TARBALL_DIR)
-    os.system("mv %s/*.tar.bz2 %s" %(RELEASE_DIR, TARBALL_DIR))
-    os.system("rm *.md5sum")
+    if not os.path.exists(TARBALL_DIR):
+        os.mkdir(TARBALL_DIR)
+    for thing in glob.glob("*.tar.bz2"):
+            move(thing, TARBALL_DIR)
+    for thing in glob.glob("*.md5sum"):
+            os.remove(thing)
     os.chdir(TARBALL_DIR)
     dirlist = get_list(TARBALL_DIR)
     for blob in dirlist:
-        print "Original Tarball: %s" %blob
-        logging.info('Repackaging %s' %blob)
+        # Get the tarball toplevel subdir name.
+        # This can vary between release lines or otherwise change, so we will extract it from the given tarball.
+        tarball = tarfile.open(blob, mode='r')
+        tar_dir = os.path.commonprefix(tarball.getnames())
+        # Generate the new tarball name
+        print "Oringinal Tarball: %s" %blob
         chunks = split_thing(blob, ".")
         filename = chunks[0]
         dirname = split_thing(filename, "-")
@@ -47,11 +61,12 @@ def fix_tarballs():
         new_blob = rejoin_thing(chunks, ".")
         print "New Tarball: %s" %new_blob
         logging.info('New blob is %s' %new_blob)
-        os.system("tar jxf %s" %blob)
-        os.system("mv %s %s" %(dirname, basename))
+        tarball.extractall()
+        tarball.close()
+        os.rename(tar_dir, basename)
         os.system("rm -rf %s/.git*" %basename)
         os.remove(blob)
-        os.system("tar jcf %s %s" %(new_blob, basename))
+        make_tarfile(new_blob, basename)
         rmtree(basename)
         os.symlink(new_blob, blob)
         os.system("md5sum %s > %s.md5sum" %(new_blob, new_blob))
@@ -60,7 +75,7 @@ def fix_tarballs():
     logging.info('Moving new blobs to release dir and cleaning up.')
     os.system("mv * %s" %RELEASE_DIR)
     os.chdir(RELEASE_DIR)
-    os.rmdir(TARBALL_DIR)
+    rmtree(TARBALL_DIR)
     logging.info('Successful.')
     print
     return
@@ -153,7 +168,9 @@ def make_bsps(bsp_list, bsp_dir):
             copyfile(poky_blob, target)
             os.chdir(dirname)
             print "Unpacking poky tarball."
-            os.system("tar jxf %s" %POKY_TARBALL)
+            tarball = tarfile.open(POKY_TARBALL, mode='r')
+            tarball.extractall()
+            tarball.close()
             shutil.move(blob_dir, new_dir)
             os.remove(POKY_TARBALL)
             if not os.path.exists(bin_dir):
@@ -165,7 +182,7 @@ def make_bsps(bsp_list, bsp_dir):
             bsp_path = os.path.join(bsp_dir, dirname, bin_dir)
             find_dupes(bsp_path, dirname)
             print "Creating BSP tarball"
-            os.system("tar jcf %s %s" %(new_blob, new_dir))
+            make_tarfile(new_blob, new_dir)
             rmtree(new_dir)
             print "Generating the md5sum."
             os.system("md5sum %s > %s.md5sum" %(new_blob, new_blob))
@@ -220,13 +237,6 @@ if __name__ == '__main__':
     os.system("clear")
     print
 
-    logfile = 'staging.log'
-    try:
-        os.remove(logfile)
-    except OSError:
-        pass
-    logging.basicConfig(format='%(levelname)s:%(message)s',filename=logfile,level=logging.INFO)
-
     PATH_VARS = where_am_i()
     VHOSTS = PATH_VARS['VHOSTS']
     AB_HOME = PATH_VARS['AB_HOME']
@@ -242,7 +252,7 @@ if __name__ == '__main__':
     # List of the files in machines directories that we delete from all releases
     CRUFT_LIST = ['*.md5sum', '*.tar.gz', '*.iso']
     # List of the platforms for which we want to generate BSP tarballs. Major and point releases.
-    BSP_LIST = ['beaglebone', 'edgerouter', 'genericx86', 'genericx86-64', 'mpc8315e-rdb']
+    BSP_LIST = ['beaglebone-yocto', 'edgerouter', 'genericx86', 'genericx86-64', 'mpc8315e-rdb']
     # List of files we do not want to include in the BSP tarballs.
     BSP_JUNK = ['*.manifest', '*.tar.bz2', '*.tgz', '*.iso', '*.md5sum', '*.tar.gz', '*-dev-*', '*-sdk-*']
 
@@ -296,13 +306,20 @@ if __name__ == '__main__':
     BUILD_APP_DIR = os.path.join(RELEASE_DIR, "build-appliance")
     REL_MD5_FILE = RELEASE + ".md5sum"
 
+    logfile = ".".join(['staging-log', RELEASE])
+    print"Logfile: %s" %logfile
+    try:
+        os.remove(logfile)
+    except OSError:
+        pass
+    logging.basicConfig(format='%(levelname)s:%(message)s',filename=logfile,level=logging.INFO)
+
     # For all releases:
     # 1) Rsync the rc candidate to a staging dir where all work happens
     logging.info('Start rsync.')
     print "Doing the rsync for the staging directory."
     sync_it(RC_SOURCE, RELEASE_DIR)
     logging.info('Successful.')
-
 
     # 2) Convert the symlinks in build-appliance dir.
     print "Converting the build-appliance symlink."
@@ -334,7 +351,7 @@ if __name__ == '__main__':
         logging.info('Fixing tarballs.')
         fix_tarballs()
 
-        # 5) Publish the eclipse stuff
+        #5) Publish the eclipse stuff
         print "Publishing the eclipse plugins."
         logging.info('Publishing eclipse plugins.')
         pub_eclipse(ECLIPSE_DIR, PLUGIN_DIR)
