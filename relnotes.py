@@ -104,6 +104,8 @@ def do_errata(outfile):
             PROJECT_TAG = BITBAKE_VER
         elif name_chunks[0] == "eclipse":
             PROJECT_BRANCH = "/".join([name_chunks[2], BRANCH])
+            PROJECT_TAG =  "/".join([name_chunks[2], DEFAULT_TAG])
+        elif name_chunks[0] == "oecore":
             PROJECT_BRANCH = BRANCH
             # For the tag we want the month and year of the build, so this is a reasonable approximation.
             timestamp = os.path.getmtime(item)
@@ -211,7 +213,7 @@ if __name__ == '__main__':
     meta-qt3: default tag
     meta-qt4: default tag
     meta-gplv2: default tag
-    oe-core: <year>-<month> This is the year and month that the release was generated. NOT THE RELEASE DATE.
+    oecore: <year>-<month> This is the year and month that the release was generated. NOT THE RELEASE DATE.
     bitbake: <version> This is the bitbake version taken from the /bin/bitbake file.
     eclipse: <plugin_ver>/<branch>-<poky_ver> i.e. neon/sumo-19.0.0 or oxygen/sumo-19.0.0
     '''
