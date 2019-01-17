@@ -2,7 +2,7 @@
 Created on Jan 7, 2016
 
 __author__ = "Tracy Graydon"
-__copyright__ = "Copyright 2016-2018 Intel Corp."
+__copyright__ = "Copyright 2016-2019 Intel Corp."
 __credits__ = ["Tracy Graydon"]
 __license__ = "GPL"
 __version__ = "2.0"
