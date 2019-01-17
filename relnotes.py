@@ -2,7 +2,7 @@
 Created on Feb 22, 2016
 
 __author__ = "Tracy Graydon"
-__copyright__ = "Copyright 2016-2018, Intel Corp."
+__copyright__ = "Copyright 2016-2019, Intel Corp."
 __credits__ = ["Tracy Graydon"]
 __license__ = "GPL"
 __version__ = "2.0"
@@ -35,19 +35,6 @@ from rel_type import release_type
 from pygit2 import Repository, clone_repository, RemoteCallbacks
 from pygit2 import GIT_SORT_TIME, GIT_SORT_TOPOLOGICAL
 
-def get_bitbake_info(path):
-    # Get the bitbake version
-    with open(path) as search:
-        for line in search:
-           line = line.rstrip()
-           if "__version__ = " in line:
-               BITBAKE_VER = split_thing(line, '"')[1]
-    if BITBAKE_VER == "NONE":
-       # Let's do something if we can't determine the BitBake version for some reason.
-       print "Can't determine the bitbake version. You'll have to fix that manually."
-       BITBAKE_VER = "FIX ME!"  # Later we write this out to the release notes as a reminder to manually fix it.
-    return BITBAKE_VER
-
 def get_repo(codename):
     repo_url = 'http://git.yoctoproject.org/git/poky'
     CWD = os.getcwd()
@@ -76,8 +63,10 @@ def do_errata(outfile):
     allfiles = filter(lambda f: os.path.isfile(f), files)
     # Filter out the renamed blobs. We want the symlinks with the hashes.
     filelist = filter(lambda x: POKY_VER not in x, allfiles)
-    filelist.sort()
-    for item in filelist:
+    # See note below about tagging for bitbake and oecore. We don't want these for point releases.
+    blob_list = [y for y in filelist if not y.startswith('bitbake') and not y.startswith('oecore')]
+    blob_list.sort()
+    for item in blob_list:
         chunks = split_thing(item, ".")
         new_chunk = split_thing(chunks[0], '-')
         hash = new_chunk.pop()
@@ -99,22 +88,9 @@ def do_errata(outfile):
         MIRROR_URL = "/".join([MIRROR_BASE_URL, RELEASE, blob]).strip()
         # Now figure out tags and branches
         name_chunks = split_thing(RELEASE_NAME, "-")
-        if name_chunks[0] == "bitbake":
-            PROJECT_BRANCH = BITBAKE_VER
-            PROJECT_TAG = BITBAKE_VER
-        elif name_chunks[0] == "eclipse":
+        if name_chunks[0] == "eclipse":
             PROJECT_BRANCH = "/".join([name_chunks[2], BRANCH])
             PROJECT_TAG =  "/".join([name_chunks[2], DEFAULT_TAG])
-        elif name_chunks[0] == "oecore":
-            PROJECT_BRANCH = BRANCH
-            # For the tag we want the month and year of the build, so this is a reasonable approximation.
-            timestamp = os.path.getmtime(item)
-            foo = datetime.date.fromtimestamp(timestamp)
-            foo = str(foo)
-            time_chunk = foo.split("-")
-            time_chunk.pop()
-            time_chunk = rejoin_thing(time_chunk, "-")
-            PROJECT_TAG = time_chunk
         else:
             PROJECT_BRANCH = BRANCH
             PROJECT_TAG = DEFAULT_TAG
@@ -199,8 +175,6 @@ if __name__ == '__main__':
     MIRROR_BASE_URL = "http://mirrors.kernel.org/yocto/yocto"
     HOME = os.getcwd()
     POKY_REPO = os.path.join(HOME, "poky")
-    BITBAKE_FILE = "bitbake/bin/bitbake"
-    BITBAKE_PATH = os.path.join(POKY_REPO, BITBAKE_FILE)
     outpath = os.path.join(HOME, RELEASE_NOTES)
 
     ''' About tagging...
@@ -213,9 +187,11 @@ if __name__ == '__main__':
     meta-qt3: default tag
     meta-qt4: default tag
     meta-gplv2: default tag
-    oecore: <year>-<month> This is the year and month that the release was generated. NOT THE RELEASE DATE.
-    bitbake: <version> This is the bitbake version taken from the /bin/bitbake file.
     eclipse: <plugin_ver>/<branch>-<poky_ver> i.e. neon/sumo-19.0.0 or oxygen/sumo-19.0.0
+    NOTE: oecore and bitbake are NOT tagged for point and milestone releases, so they are not handled here. But this tag format info is included here in case 
+          something changes, and for general reference.
+    oecore: <year>-<month> This is the year and month that the release was generated. NOT THE RELEASE DATE..
+    bitbake: <version> This is the bitbake version taken from the /bin/bitbake file. 
     '''
     
     outfile = open(outpath, 'w')
@@ -223,10 +199,6 @@ if __name__ == '__main__':
     # Get the poky repo now so we can do all the things.
     repo = get_repo(BRANCH)
    
-    # Get the bitbake version
-    BITBAKE_VER = "NONE"
-    BITBAKE_VER = get_bitbake_info(BITBAKE_PATH)
- 
     do_errata(outfile)
 
     if REL_TYPE == "point":
