@@ -346,16 +346,25 @@ if __name__ == '__main__':
 
     # For major and point releases
     if REL_TYPE == "major" or REL_TYPE == "point":
-        # 4) Fix up the eclipse and poky tarballs
-        print "Cleaning up the eclipse, poky and other tarballs."
+        # 4) Fix up the various tarballs
+        print "Cleaning up the poky and other tarballs."
         logging.info('Fixing tarballs.')
         fix_tarballs()
 
+        # As of 2.6.2 we are no longer supporting eclipse
+        # plugins. There is an off chance that we might
+        # need to include them for some reason, so we'll
+        # make it conditional for now.
         #5) Publish the eclipse stuff
-        print "Publishing the eclipse plugins."
-        logging.info('Publishing eclipse plugins.')
-        pub_eclipse(ECLIPSE_DIR, PLUGIN_DIR)
-        logging.info('Successful.')
+        print "Checking for Eclipse Plugins...."
+        if os.path.isdir(ECLIPSE_DIR) and os.listdir(ECLIPSE_DIR):
+            print "Found Eclipse plugins. Publishing."
+            logging.info('Publishing eclipse plugins.')
+            pub_eclipse(ECLIPSE_DIR, PLUGIN_DIR)
+            logging.info('Successful.')
+        else:
+            print "No Eclipse Plugins Found. If that is not what you are expecting, check on that."
+            logging.info('No Eclipse Plugins Found. Nothing to publish.')
 
         # 6) Make the bsps
         print "Generating the BSP tarballs."
