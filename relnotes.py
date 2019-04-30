@@ -55,7 +55,7 @@ def get_repo(codename):
     print "We are now on branch: %s\n" %branch_name
     return poky_repo
 
-def do_errata(outfile):
+def do_errata(outfile, REL_TYPE):
     print "Generating the Errata."
     outfile.write("\n------------------\n%s Errata\n--------------------\n\n" %RELEASE)
     os.chdir(RELEASE_DIR)
@@ -63,9 +63,13 @@ def do_errata(outfile):
     allfiles = filter(lambda f: os.path.isfile(f), files)
     # Filter out the renamed blobs. We want the symlinks with the hashes.
     filelist = filter(lambda x: POKY_VER not in x, allfiles)
-    # See note below about tagging for bitbake and oecore. We don't want these for point releases.
-    blob_list = [y for y in filelist if not y.startswith('bitbake') and not y.startswith('oecore')]
-    blob_list.sort()
+    # For major release errata want to include bitbkae and oecore.
+    if REL_TYPE == "major":
+        blob_list = filelist
+    else:
+        # See note below about tagging. For point release errata, we do not want to include bitbake and oecore.
+        blob_list = [y for y in filelist if not y.startswith('bitbake') and not y.startswith('oecore')]
+    blob_list.sort(reverse = True)
     for item in blob_list:
         chunks = split_thing(item, ".")
         new_chunk = split_thing(chunks[0], '-')
@@ -197,9 +201,9 @@ if __name__ == '__main__':
     outfile = open(outpath, 'w')
 
     # Get the poky repo now so we can do all the things.
-    repo = get_repo(BRANCH)
+    #repo = get_repo(BRANCH)
    
-    do_errata(outfile)
+    do_errata(outfile, REL_TYPE)
 
     if REL_TYPE == "point":
         outfile.write("\n---------------\n Known Issues\n---------------\n")
