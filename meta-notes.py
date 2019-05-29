@@ -7,7 +7,8 @@ from shutil import rmtree
 from pygit2 import Repository, clone_repository
 from pygit2 import GIT_SORT_TIME
 from utils import where_am_i, split_thing, rejoin_thing
-
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 def get_repo(codename):
     repo_url = 'http://git.yoctoproject.org/git/meta-intel'
