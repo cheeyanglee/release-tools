@@ -2,7 +2,7 @@
 Created on Oct 16, 2018
 
 __author__ = "Tracy Graydon"
-__copyright__ = "Copyright 2018, Intel Corp."
+__copyright__ = "Copyright 2018 - 2019, Intel Corp."
 __credits__ = ["Tracy Graydon"]
 __license__ = "GPL"
 __version__ = "2.0"
@@ -15,6 +15,7 @@ dump to a file for ease of use.
 '''
 
 import os
+import sys
 import optparse
 import glob
 from utils import where_am_i, split_thing, rejoin_thing
@@ -44,12 +45,6 @@ if __name__ == '__main__':
     RC_DIR = VARS['RC_DIR']
     RC_SOURCE = os.path.join(AB_BASE, RC_DIR)
     RELEASE_DIR = os.path.join(AB_BASE, RELEASE)
-
-    for thing in ['RELEASE', 'RC_DIR']:
-        print "%s: %s" %(thing, VARS[thing])
-    print "RC_SOURCE: %s" %RC_SOURCE
-    print "RELEASE_DIR: %s" %RELEASE_DIR
-    print
 
     HOME = os.getcwd()
     HASH_FILE = ".".join(["HASHES", RELEASE])
