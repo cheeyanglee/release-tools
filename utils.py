@@ -2,7 +2,7 @@
 Created on Oct 16, 2018
 
 __author__ = "Tracy Graydon"
-__copyright__ = "Copyright 2018 Intel Corp."
+__copyright__ = "Copyright 2018 - 2019, Intel Corp."
 __credits__ = ["Tracy Graydon"]
 __license__ = "GPL"
 __version__ = "2.0"
@@ -12,6 +12,7 @@ __email__ = "tracy.graydon@intel.com"
 
 import os
 import os.path
+import pwd
 import socket
 import sys
 import hashlib
@@ -19,7 +20,6 @@ import glob
 
 def where_am_i():
     abhost = socket.getfqdn()
-    print "ABHOST: %s" %abhost
     if "yocto.io" in abhost:
         VHOSTS = "/srv/autobuilder"
     elif "autobuilder.yoctoproject.org" in abhost:
@@ -36,6 +36,21 @@ def where_am_i():
     DL_BASE = os.path.join(DL_HOME, "yocto") # all other releases use this
     path_dict = {'VHOSTS': VHOSTS, 'AB_HOME': AB_HOME, 'AB_BASE': AB_BASE, 'DL_HOME': DL_HOME, 'DL_BASE': DL_BASE}
     return path_dict
+
+def who_am_i():
+    I_AM = pwd.getpwnam(os.getlogin())
+    return I_AM
+
+def signature():
+   me = who_am_i()
+   email = me[4]
+   chunks = split_thing(email, "@")
+   chunks = chunks[0]
+   name_chunks = split_thing(chunks, ".")
+   firstname = name_chunks[0]
+   lastname = name_chunks.pop()
+   full_name = " ".join([firstname.capitalize(), lastname.capitalize()])
+   return [full_name, email] 
 
 def get_list(dirname):
     dirlist = os.listdir(dirname)
@@ -135,3 +150,34 @@ def gen_rel_md5(dirname, md5_file):
                 f.write(md5str + '\n')
     f.close()
     return
+
+def get_hashes(rc_name):
+    from rel_type import release_type 
+    
+    PATH_DICT = where_am_i()
+    AB_BASE = PATH_DICT['AB_BASE']
+
+    VARS = release_type(rc_name)
+    RELEASE = VARS['RELEASE']
+    RC_DIR = VARS['RC_DIR']
+    RC_SOURCE = os.path.join(AB_BASE, RC_DIR)
+    RELEASE_DIR = os.path.join(AB_BASE, RELEASE)
+
+    HOME = os.getcwd()
+    HASH_FILE = ".".join(["HASHES", RELEASE])
+    outpath = os.path.join(HOME, HASH_FILE)
+
+    os.chdir(RC_SOURCE)
+    files = glob.glob('*.bz2')
+    filelist = filter(lambda f: os.path.isfile(f), files)
+    filelist.sort()
+    outfile = open(outpath, 'w')
+    for item in filelist:
+        chunks = split_thing(item, ".")
+        new_chunk = split_thing(chunks[0], '-')
+        hash = new_chunk.pop()
+        RELEASE_NAME = rejoin_thing(new_chunk, "-")
+        outfile.write("%s: %s\n" %(RELEASE_NAME, hash))
+    outfile.close()
+    print "Hashes written to %s\n" %HASH_FILE
+    return HASH_FILE
