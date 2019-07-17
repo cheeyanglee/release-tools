@@ -112,6 +112,29 @@ def find_bogus(results_dir, branch, commit):
                    print
    return status
 
+def do_testreport(report_file, header_path):
+    # Generate the testreport.
+    outfile = open(report_file, 'a')
+    print "Generating the %s file." %report_file
+    if os.path.isfile(header_path):
+        infile = open(header_path, 'r')
+    else:
+        header_path = os.path.join(CONTRIB_PATH, "header.txt")
+        if os.path.isfile(header_path):
+            infile = open(header_path, 'r')
+        else:
+            print "Can't find a header file. Quitting."
+            sys.exit()
+    all_the_things = infile.read()
+    infile.close()
+    outfile.writelines("%s\n" %all_the_things)
+    outfile.flush()
+    subprocess.call([RESULT_TOOL, "report", RELEASE_DIR], stdout=outfile)
+    outfile.close()
+    print "Done.\n"
+    return
+ 
+
 if __name__ == '__main__':
  
     os.system("clear")
@@ -208,28 +231,6 @@ if __name__ == '__main__':
     contrib_repo = get_repo(CONTRIB_REPO, CODENAME)
     results_repo = get_repo(RESULTS_REPO, POKY_BRANCH)
 
-    # Get the testresults from the contrib repo and put them in the RELEASE_DIR.
-    copytree(RESULTS_DIR, INTEL_RESULTS)
-
-    # Generate the testreport.
-    outfile = open(REPORT_FILE, 'a')
-    print "Generating the %s file." %REPORT_FILE
-    if os.path.isfile(HEADER_PATH):
-        infile = open(HEADER_PATH, 'r')
-    else:
-        HEADER_PATH = os.path.join(CONTRIB_PATH, "header.txt")
-        if os.path.isfile(HEADER_PATH):
-            infile = open(HEADER_PATH, 'r')
-        else:
-            print "Can't find a header file. Quitting."
-            sys.exit()
-    all_the_things = infile.read()
-    infile.close()
-    outfile.writelines("%s\n" %all_the_things)
-    outfile.flush()
-    subprocess.call([RESULT_TOOL, "report", RELEASE_DIR], stdout=outfile)
-    outfile.close()
-    print "Done.\n"
 
     # Get the poky build hash
     POKY_HASH = get_poky_hash(RELEASE_DIR, REL_TYPE, POKY_BRANCH)
@@ -244,6 +245,12 @@ if __name__ == '__main__':
         sys.exit()
     else:
         print "No issues found.\n"
+
+    # Get the testresults from the contrib repo and put them in the RELEASE_DIR.
+    copytree(RESULTS_DIR, INTEL_RESULTS)
+
+    # Generate the testreport
+    do_testreport(REPORT_FILE, HEADER_PATH)
     
     # If we made it this far without dying, there should be only ONE revision in the resulttool output.
     print "Running the resultool store command."
