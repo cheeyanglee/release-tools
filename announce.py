@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 '''
 Created on June 19, 2019
 
