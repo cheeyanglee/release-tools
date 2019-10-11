@@ -59,7 +59,7 @@ them, and the meta-intel release process, are not covered here.
 
 
 Yocto Release Process
-=======================
+=====================
 
 This section deals with the Yocto release process as it pertains to the tools in
 this repo. There are other release activities that happen which outside the
@@ -110,3 +110,22 @@ repackage the :wq
         logging.info('Generating the master md5sum table.')
         gen_rel_md5(RELEASE_DIR, REL_MD5_FILE)
         logging.info('Successful.')
+
+
+Contributing
+============
+
+This module is owned by Vineela Tummalapalli <vineela.tummalapalli@intel.com>.
+
+Patches should be sent via git-send-email to the yocto@yoctoproject.org mailing list with
+[release-tools] in the subject, CC'd to Vineela.
+
+The following commands will configure this if ran inside a clone of release-tools:
+
+$ git config  --local --add format.subjectprefix 'PATCH release-tools'
+$ git config  --local --add sendemail.to yocto@yoctoproject.org
+$ git config  --local --add sendemail.cc vineela.tummalapalli@intel.com
+
+Then sending a patch is as simple as:
+
+$ git send-email origin/master
