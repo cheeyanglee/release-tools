@@ -202,7 +202,7 @@ if __name__ == '__main__':
     outfile = open(outpath, 'w')
 
     # Get the poky repo now so we can do all the things.
-    #repo = get_repo(BRANCH)
+    repo = get_repo(BRANCH)
    
     do_errata(outfile, REL_TYPE)
 
