@@ -57,8 +57,9 @@ def get_repo(codename):
     return poky_repo
 
 def do_errata(outfile, REL_TYPE):
-    print "Generating the Errata."
-    outfile.write("\n------------------\n%s Errata\n--------------------\n\n" %RELEASE)
+    print "Generating the Repositories/Downloads."
+    outfile.write("\n--------------------------\n%s Release Notes\n--------------------------\n\n" %RELEASE)
+    outfile.write("\n--------------------------\n Repositories/Downloads\n--------------------------\n\n")
     os.chdir(RELEASE_DIR)
     files = glob.glob('*.bz2')
     allfiles = filter(lambda f: os.path.isfile(f), files)
@@ -68,8 +69,8 @@ def do_errata(outfile, REL_TYPE):
     if REL_TYPE == "major":
         blob_list = filelist
     else:
-        # See note below about tagging. For point release errata, we do not want to include bitbake and oecore.
-        blob_list = [y for y in filelist if not y.startswith('bitbake') and not y.startswith('oecore')]
+        # See note below about tagging. For point release errata, we do not want to include bitbake.
+        blob_list = [y for y in filelist if not y.startswith('bitbake')]
     blob_list.sort(reverse = True)
     for item in blob_list:
         chunks = split_thing(item, ".")
@@ -98,11 +99,25 @@ def do_errata(outfile, REL_TYPE):
             PROJECT_TAG =  "/".join([name_chunks[2], DEFAULT_TAG])
         else:
             PROJECT_BRANCH = BRANCH
-            PROJECT_TAG = DEFAULT_TAG
-        outfile.write("Release Name: %s\n" %RELEASE_NAME)
+            PROJECT_TAG = RELEASE
+            if name_chunks[0] == "poky" or name_chunks[0] == "bitbake":
+                REPO_NAME = name_chunks[0]
+                if REPO_NAME == "poky":
+                    REPO_URL = "/".join(["https://git.yoctoproject.org/git",REPO_NAME])
+                else:
+                    REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+            elif name_chunks[0] == "oecore":
+                REPO_NAME = "openembedded-core"
+                REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+            else:
+                REPO_NAME = "-".join([name_chunks[0], name_chunks[1]])
+                REPO_URL = "/".join(["https://git.yoctoproject.org/git",REPO_NAME])
+        outfile.write("Repository Name: %s\n" %REPO_NAME)
+        outfile.write("Repository Location: %s\n" %REPO_URL)
         outfile.write("Branch: %s\n" %PROJECT_BRANCH)
         outfile.write("Tag: %s\n" %PROJECT_TAG)
-        outfile.write("Hash: %s\n" %hash)
+        outfile.write("Git Revision: %s\n" %hash)
+        outfile.write("Release Arefact: %s\n" %RELEASE_NAME)
         outfile.write("md5: %s\n" %md5)
         outfile.write("Download Locations:\n")
         outfile.write(DL_URL + "\n")
@@ -186,16 +201,16 @@ if __name__ == '__main__':
     The default tag is of format <branch>-<poky_ver>. i.e. sumo-19.0.0, thud-20.0.0
     However, there are some exceptions to that, such as bitbake, eclipse, and oe-core.
     Respective tag formats are:
-    poky: default tag i.e. sumo-19.0.0
+    poky: default tag i.e. sumo-19.0.0 and tag with yocto-<yocto Project release number> (i.e., yocto-2.6.4)
     meta-intel: default tag  This is the tarball associated with the external release and not official (Intel) BSP releases.
-    meta-mingw: default tag
+    meta-mingw: default tag and tag with yocto-<yocto Project release number> (i.e., yocto-2.6.4)
     meta-qt3: default tag
     meta-qt4: default tag
-    meta-gplv2: default tag
+    meta-gplv2: default tag and tag with yocto-<yocto Project release number> (i.e., yocto-2.6.4)
     eclipse: <plugin_ver>/<branch>-<poky_ver> i.e. neon/sumo-19.0.0 or oxygen/sumo-19.0.0
     NOTE: oecore and bitbake are NOT tagged for point and milestone releases, so they are not handled here. But this tag format info is included here in case 
-          something changes, and for general reference.
-    oecore: <year>-<month> This is the year and month that the release was generated. NOT THE RELEASE DATE..
+          something changes, and for general reference. From 2.7.2, 2.6.4 and 3.0 point releases onwards oecore is tagged for point releases as well.
+    oecore: yocto-<release number> (eg: yocto-2.6.4), <year>-<month> This is the year and month that the release was generated. NOT THE RELEASE DATE..
     bitbake: <version> This is the bitbake version taken from the /bin/bitbake file. 
     '''
     
