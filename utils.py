@@ -101,41 +101,41 @@ def check_rc(rc_source):
         found = "True"
     return found
 
-def get_md5sum(path, blocksize = 4096):
+def get_sha256sum(path, blocksize = 4096):
     f = open(path, 'rb')
-    md5sum = hashlib.md5()
+    sha256sum = hashlib.sha256()
     buffer = f.read(blocksize)
     while len(buffer) > 0:
-        md5sum.update(buffer)
+        sha256sum.update(buffer)
         buffer = f.read(blocksize)
     f.close()
-    return md5sum.hexdigest()
+    return sha256sum.hexdigest()
 
-def gen_md5sum(dirname):
+def gen_sha256sum(dirname):
     print
-    print "Generating md5sums for files in %s...." %dirname
+    print "Generating sha256sums for files in %s...." %dirname
     for root, dirs, files in os.walk(dirname, topdown=True):
         for name in files:
             filename = (os.path.join(root, name))
             if not os.path.islink(filename):
-                md5sum = get_md5sum(filename)
-                md5_file = ".".join([filename, 'md5sum'])
-                md5str = md5sum + " " + name
-                print md5str
-                f = open(md5_file, 'w')
-                f.write(md5str)
+                sha256sum = get_sha256sum(filename)
+                sha256_file = ".".join([filename, 'sha256sum'])
+                sha256str = sha256sum + " " + name
+                print sha256str
+                f = open(sha256_file, 'w')
+                f.write(sha256str)
                 f.close()
     return
 
-def gen_rel_md5(dirname, md5_file):
+def gen_rel_sha256(dirname, sha256_file):
     os.chdir(dirname)
-    print "Generating master md5sum file %s" %md5_file
-    f = open(md5_file, 'w')
+    print "Generating master sha256sum file %s" %sha256_file
+    f = open(sha256_file, 'w')
     for root, dirs, files in os.walk(dirname, topdown=True):
         for name in files:
             filename = (os.path.join(root, name))
             ext = split_thing(name, ".")[-1]
-            if not (ext == "md5sum" or ext == "txt"):
+            if not (ext == "md5sum" or ext == "sha256sum" or ext == "txt"):
                 relpath = split_thing(filename, dirname)
                 relpath.pop(0)
                 relpath = relpath[0]
@@ -144,11 +144,11 @@ def gen_rel_md5(dirname, md5_file):
                 relpath = rejoin_thing(relpath, "/")
                 relpath = "./" + relpath
                 print relpath
-                md5sum = get_md5sum(filename)
-                print md5sum
-                md5str = md5sum + " " + relpath
-                print md5str
-                f.write(md5str + '\n')
+                sha256sum = get_sha256sum(filename)
+                print sha256sum
+                sha256str = sha256sum + " " + relpath
+                print sha256str
+                f.write(sha256str + '\n')
     f.close()
     return
 

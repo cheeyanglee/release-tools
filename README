@@ -105,10 +105,10 @@ repackage the :wq
         make_bsps(BSP_LIST, BSP_DIR)
         logging.info('Successful.')
 
-        # 7) Generate the master md5sum file for the release (for all releases, except milestones)
-        print "Generating the master md5sum table."
-        logging.info('Generating the master md5sum table.')
-        gen_rel_md5(RELEASE_DIR, REL_MD5_FILE)
+        # 7) Generate the master sha256sum file for the release (for all releases, except milestones)
+        print "Generating the master sha256sum table."
+        logging.info('Generating the master sha256sum table.')
+        gen_rel_sha(RELEASE_DIR, REL_SHA_FILE)
         logging.info('Successful.')
 
 

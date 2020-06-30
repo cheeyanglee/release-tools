@@ -79,15 +79,15 @@ def do_errata(outfile, REL_TYPE):
         # Get the release name
         base_name = rejoin_thing(new_chunk, "-")
         RELEASE_NAME = "-".join([base_name, DEFAULT_TAG])
-        # Now let's get the md5sum        
-        files = glob.glob('*.md5sum')
-        md5file = filter(lambda y: RELEASE_NAME in y, files).pop()
-        filepath = os.path.join(RELEASE_DIR, md5file)
+        # Now let's get the sha256sum        
+        files = glob.glob('*.sha256sum')
+        shafile = filter(lambda y: RELEASE_NAME in y, files).pop()
+        filepath = os.path.join(RELEASE_DIR, shafile)
         f = open(filepath, 'r')
         rawline = f.readline()
-        md5line = split_thing(rawline, " ")
-        md5 = md5line[0]
-        blob = md5line[2]
+        shaline = split_thing(rawline, " ")
+        sha = shaline[0]
+        blob = shaline[2]
         f.close()
         # Set up the download URLS
         DL_URL = "/".join([DL_BASE_URL, RELEASE, blob]).strip()
@@ -118,7 +118,7 @@ def do_errata(outfile, REL_TYPE):
         outfile.write("Tag: %s\n" %PROJECT_TAG)
         outfile.write("Git Revision: %s\n" %hash)
         outfile.write("Release Arefact: %s\n" %RELEASE_NAME)
-        outfile.write("md5: %s\n" %md5)
+        outfile.write("sha: %s\n" %sha)
         outfile.write("Download Locations:\n")
         outfile.write(DL_URL + "\n")
         outfile.write(MIRROR_URL + "\n\n")

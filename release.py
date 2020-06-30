@@ -23,7 +23,7 @@ import shutil
 import tarfile
 from shutil import rmtree, copy, copyfile, move
 from subprocess import call
-from utils import where_am_i, sanity_check, sync_it, get_list, split_thing, rejoin_thing, get_md5sum, gen_md5sum, gen_rel_md5
+from utils import where_am_i, sanity_check, sync_it, get_list, split_thing, rejoin_thing, get_sha256sum, gen_sha256sum, gen_rel_sha256
 from rel_type import release_type
 
 def make_tarfile(target_blob, source_dir):
@@ -42,6 +42,8 @@ def fix_tarballs():
     for thing in glob.glob("*.tar.bz2"):
             move(thing, TARBALL_DIR)
     for thing in glob.glob("*.md5sum"):
+            os.remove(thing)
+    for thing in glob.glob("*.sha256sum"):
             os.remove(thing)
     os.chdir(TARBALL_DIR)
     dirlist = get_list(TARBALL_DIR)
@@ -70,7 +72,7 @@ def fix_tarballs():
         make_tarfile(new_blob, basename)
         rmtree(basename)
         os.symlink(new_blob, blob)
-        os.system("md5sum %s > %s.md5sum" %(new_blob, new_blob))
+        os.system("sha256sum %s > %s.sha256sum" %(new_blob, new_blob))
         logging.info('Successful.')
         print
     logging.info('Moving new blobs to release dir and cleaning up.')
@@ -115,14 +117,14 @@ def convert_symlinks(dirname):
 def find_dupes(dirname, platform):
     print "\nLooking for duplicate files in %s" %dirname
     file_list = []
-    md5sum_list = []
+    sha256sum_list = []
     for root, dirs, files in os.walk(dirname, topdown=True):
         for name in files:
             filename = (os.path.join(root, name))
-            md5sum = get_md5sum(filename)
-            file_list.append((filename, md5sum))
-            md5sum_list.append(md5sum)
-    s=set(md5sum_list)
+            sha256sum = get_sha256sum(filename)
+            file_list.append((filename, sha256sum))
+            sha256sum_list.append(sha256sum)
+    s=set(sha256sum_list)
     d=[]
     for x in file_list:
         if x[1] in s:
@@ -143,6 +145,7 @@ def make_bsps(bsp_list, bsp_dir):
     print "\nCreating bsps.....\n"
     if not os.path.exists(bsp_dir):
         os.mkdir(bsp_dir)
+        print "VINEELA: Created bsp_dir"
     else:
         print "BSP tarball dir exists! Skipping BSP creation."
         return
@@ -185,8 +188,8 @@ def make_bsps(bsp_list, bsp_dir):
             print "Creating BSP tarball"
             make_tarfile(new_blob, new_dir)
             rmtree(new_dir)
-            print "Generating the md5sum."
-            os.system("md5sum %s > %s.md5sum" %(new_blob, new_blob))
+            print "Generating the sha256sum."
+            os.system("sha256sum %s > %s.sha256sum" %(new_blob, new_blob))
             print "Copying %s BSP to platform dir" %dirname
             os.system("mv * %s" %platform_dir)
             os.chdir(bsp_dir)
@@ -219,7 +222,7 @@ def pub_eclipse(EDIR, PDIR):
             os.system("mkdir -p %s" %target_dir)
             source_dir = os.path.join(EDIR, name)
             filelist = get_list(source_dir)
-            foo = [ x for x in filelist if "md5sum" not in x ]
+            foo = [ x for x in filelist if "sha256sum" not in x ]
             found = filter(lambda x: 'archive.zip' in x, foo).pop()
             source = os.path.join(EDIR, name, found)
             target = os.path.join(target_dir, found)
@@ -251,11 +254,11 @@ if __name__ == '__main__':
     print "DL_BASE: %s" %DL_BASE
    
     # List of the files in machines directories that we delete from all releases
-    CRUFT_LIST = ['*.md5sum', '*.tar.gz', '*.iso']
+    CRUFT_LIST = ['*.md5sum', '*.tar.gz', '*.iso', '*.sha256sum']
     # List of the platforms for which we want to generate BSP tarballs. Major and point releases.
     BSP_LIST = ['beaglebone-yocto', 'edgerouter', 'genericx86', 'genericx86-64', 'mpc8315e-rdb']
     # List of files we do not want to include in the BSP tarballs.
-    BSP_JUNK = ['*.manifest', '*.tar.bz2', '*.tgz', '*.iso', '*.md5sum', '*.tar.gz', '*-dev-*', '*-sdk-*']
+    BSP_JUNK = ['*.manifest', '*.tar.bz2', '*.tgz', '*.iso', '*.md5sum', '*.tar.gz', '*-dev-*', '*-sdk-*', '*.sha256sum']
 
     parser = optparse.OptionParser()
     parser.add_option("-i", "--build-id",
@@ -305,8 +308,12 @@ if __name__ == '__main__':
     POKY_TARBALL = "poky-" + BRANCH + "-" + POKY_VER + ".tar.bz2"
     ECLIPSE_DIR = os.path.join(RELEASE_DIR, "eclipse-plugin")
     BUILD_APP_DIR = os.path.join(RELEASE_DIR, "build-appliance")
-    REL_MD5_FILE = RELEASE + ".md5sum"
+    REL_SHA_FILE = RELEASE + ".sha256sum"
 
+    print"VINEELA: BSP_DIR: %s" %BSP_DIR
+    print"VINEELA: MACHINES: %s" %MACHINES
+    print"VINEELA: TARBALL_DIR: %s" %TARBALL_DIR
+    print"VINEELA: POKY_TARBALL: %s" %POKY_TARBALL
     logfile = ".".join(['staging-log', RELEASE])
     print"Logfile: %s" %logfile
     try:
@@ -340,9 +347,9 @@ if __name__ == '__main__':
         logging.info('Nuking cruft in %s' %dirname)
         nuke_cruft(dirname, CRUFT_LIST)
         logging.info('Successful.')
-    print "Generating fresh md5sums."
-    logging.info('Generating fresh md5sums.')
-    gen_md5sum(MACHINES)
+    print "Generating fresh sha256sums."
+    logging.info('Generating fresh sha256sums.')
+    gen_sha256sum(MACHINES)
     logging.info('Successful.')
 
     # For major and point releases
@@ -373,8 +380,8 @@ if __name__ == '__main__':
         make_bsps(BSP_LIST, BSP_DIR)
         logging.info('Successful.')
 
-        # 7) Generate the master md5sum file for the release (for all releases, except milestones)
-        print "Generating the master md5sum table."
-        logging.info('Generating the master md5sum table.')
-        gen_rel_md5(RELEASE_DIR, REL_MD5_FILE)
+        # 7) Generate the master sha256sum file for the release (for all releases, except milestones)
+        print "Generating the master sha256sum table."
+        logging.info('Generating the master sha256sum table.')
+        gen_rel_sha(RELEASE_DIR, REL_SHA_FILE)
         logging.info('Successful.')
