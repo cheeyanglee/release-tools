@@ -65,12 +65,8 @@ def do_errata(outfile, REL_TYPE):
     allfiles = filter(lambda f: os.path.isfile(f), files)
     # Filter out the renamed blobs. We want the symlinks with the hashes.
     filelist = filter(lambda x: POKY_VER not in x, allfiles)
-    # For major release errata want to include bitbkae and oecore.
-    if REL_TYPE == "major":
-        blob_list = filelist
-    else:
-        # See note below about tagging. For point release errata, we do not want to include bitbake.
-        blob_list = [y for y in filelist if not y.startswith('bitbake')]
+    # For major release and point releases errata do not want to include meta-intel.
+    blob_list = [y for y in filelist if not y.startswith('meta-intel')]
     blob_list.sort(reverse = True)
     for item in blob_list:
         chunks = split_thing(item, ".")
