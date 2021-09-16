@@ -44,14 +44,27 @@ def who_am_i():
 
 def signature():
    me = who_am_i()
-   email = me[4]
+   pwd_email = me[4]
+   # There can be at least two formats for the email portion:
+   # Case 1: FULL NAME <foo@somewhere.com>
+   # or
+   # Case 2: foo@somewhere.com
+   # Account for both. Add new formats if we discover more.
+   # Case 1
+   email_chunks = split_thing(pwd_email, " ")
+   if len(email_chunks) == 1:
+       email = pwd_email
+   elif len(email_chunks) > 1:
+       # Case 2
+       email = email_chunks[-1].replace("<", "").replace(">", "")
+   #print "Email: %s" %email
    chunks = split_thing(email, "@")
    chunks = chunks[0]
    name_chunks = split_thing(chunks, ".")
    firstname = name_chunks[0]
    lastname = name_chunks.pop()
    full_name = " ".join([firstname.capitalize(), lastname.capitalize()])
-   return [full_name, email] 
+   return [full_name, email]
 
 def get_list(dirname):
     dirlist = os.listdir(dirname)
