@@ -56,9 +56,6 @@ if __name__ == '__main__':
     parser.add_option("-b", "--branch",
                       type="string", dest="branch",
                       help="Required for Major and Point releases. Not used for milestones. i.e. thud, warrior, zeus, etc.")
-    parser.add_option("-p", "--poky-ver",
-                      type="string", dest="poky",
-                      help="Required for Major and Point releases. Not used for milestones. i.e. 19.0.0, 20.0.1, 22.0.0.")
     (options, args) = parser.parse_args()
 
     # Get the release type and stuff
@@ -77,17 +74,14 @@ if __name__ == '__main__':
        print "Please use -h or --help for options."
        sys.exit()
 
-    POKY_VER = options.poky
     CODENAME = options.branch
     BRANCH = CODENAME
     TEMPLATE = ".".join(["Announce", RELEASE])
     outpath = os.path.join(HOME, TEMPLATE)
 
-    if options.poky and options.branch:
-        DEFAULT_TAG = "-".join([BRANCH, POKY_VER])
 
-    if ((REL_TYPE == "point") or (REL_TYPE == "major")) and not (options.poky and options.branch):
-        print "You need to specify both the branch name and the poky version for point or major releases."
+    if ((REL_TYPE == "point") or (REL_TYPE == "major")) and not (options.branch):
+        print "You need to specify the branch name for point or major releases."
         print "Please use -h or --help for options."
 
     # Find the release engineer name and email for email signature
@@ -112,12 +106,24 @@ if __name__ == '__main__':
 
     if REL_TYPE == "major" or REL_TYPE == "point":
         print "\nGenerating announcement for %s release %s." %(REL_TYPE, REL_ID)
-        BLOB = "poky" + "-" + DEFAULT_TAG + ".tar.bz2"
+        hash_file = get_hashes(options.build)
+        hash_path = os.path.join(HOME, hash_file)
+        f = open(hash_path, 'r')
+        release_hashes = f.read()
+        f.close()
+        word = "poky"
+        sentences = release_hashes.split('\n')
+        for sentence in sentences :
+            if word in sentence:
+                poky_sentence = sentence
+                x = poky_sentence.split(":")
+                poky_hash = x[1].lstrip()
+        BLOB = "poky" + "-" + poky_hash + ".tar.bz2"
         DL_URL = "/".join([DL_BASE_URL, RELEASE, BLOB]).strip()
         MIRROR_URL = "/".join([MIRROR_BASE_URL, RELEASE, BLOB]).strip()
         REPORT_URL = "/".join([DL_BASE_URL, RELEASE, TEST_REPORT]).strip()
         RELNOTES_URL = "/".join([DL_BASE_URL, RELEASE, "RELEASENOTES"]).strip()
-        RELEASE_STR = "Yocto Project " + REL_ID +  " (" + DEFAULT_TAG + ") " + "Release"
+        RELEASE_STR = "Yocto Project " + REL_ID +  "Release"
         RELNOTES = "\nA gpg signed version of these release notes is available at:\n"
         CLOSING = "\nThank you for everyone's contributions to this release.\n"
         print
