@@ -60,25 +60,25 @@ def do_errata(outfile, REL_TYPE):
     print "Generating the Repositories/Downloads."
     outfile.write("\n--------------------------\n%s Release Notes\n--------------------------\n\n" %RELEASE)
     outfile.write("\n--------------------------\n Repositories/Downloads\n--------------------------\n\n")
-    os.chdir(RELEASE_DIR)
+    os.chdir(RC_SOURCE)
     files = glob.glob('*.bz2')
     allfiles = filter(lambda f: os.path.isfile(f), files)
-    # Filter out the renamed blobs. We want the symlinks with the hashes.
-    filelist = filter(lambda x: POKY_VER not in x, allfiles)
     # For major release and point releases errata do not want to include meta-intel.
-    blob_list = [y for y in filelist if not y.startswith('meta-intel')]
+    blob_list = [y for y in allfiles if not (y.startswith('meta-intel') or y.startswith('meta-openembedded') or \
+                                             y.startswith('meta-aws') or y.startswith('meta-arm') or \
+                                             y.startswith('meta-agl'))]
     blob_list.sort(reverse = True)
     for item in blob_list:
         chunks = split_thing(item, ".")
         new_chunk = split_thing(chunks[0], '-')
         hash = new_chunk.pop()
         # Get the release name
-        base_name = rejoin_thing(new_chunk, "-")
-        RELEASE_NAME = "-".join([base_name, DEFAULT_TAG])
+        base_name = chunks[0]
+        RELEASE_NAME = base_name
         # Now let's get the sha256sum        
         files = glob.glob('*.sha256sum')
         shafile = filter(lambda y: RELEASE_NAME in y, files).pop()
-        filepath = os.path.join(RELEASE_DIR, shafile)
+        filepath = os.path.join(RC_SOURCE, shafile)
         f = open(filepath, 'r')
         rawline = f.readline()
         shaline = split_thing(rawline, " ")
@@ -139,16 +139,13 @@ if __name__ == '__main__':
     parser.add_option("-b", "--branch",
                       type="string", dest="branch",
                       help="Required for Major and Point releases. i.e. daisy, fido, jethro, etc. We don't do relnotes for milestones.")
-    parser.add_option("-p", "--poky-ver",
-                      type="string", dest="poky",
-                      help="Required for Major and Point releases. i.e. 14.0.0. We don't do relnotes for milestones.")
     parser.add_option("-r", "--revisions",
                       type="string", dest="revs",
                       help="Required. Specify the revision range to use for the git log. i.e. yocto-2.0.1 would use yocto-2.0..HEAD. ")
     (options, args) = parser.parse_args()
 
-    if not (options.build and options.branch and options.poky and options.revs):
-        print "You must specify the RC, branch, poky version, and revision range."
+    if not (options.build and options.branch and options.revs):
+        print "You must specify the RC, branch, and revision range."
         print "Please use -h or --help for options."
         sys.exit()
 
@@ -161,7 +158,6 @@ if __name__ == '__main__':
        REL_TYPE = VARS['REL_TYPE']
        MILESTONE = VARS['MILESTONE']
        RC_SOURCE = os.path.join(AB_BASE, RC_DIR)
-       RELEASE_DIR = os.path.join(AB_BASE, RELEASE)
     else:
        print "Build ID is a required argument."
        print "Please use -h or --help for options."
@@ -170,17 +166,15 @@ if __name__ == '__main__':
     for thing in ['RC_DIR', 'RELEASE', 'RC', 'REL_ID', 'REL_TYPE', 'MILESTONE']:
         print "%s: %s" %(thing, VARS[thing])
     print "RC_SOURCE: %s" %RC_SOURCE
-    print "RELEASE_DIR: %s" %RELEASE_DIR
 
     if REL_TYPE == "milestone":
         print "We don't do release notes or errata for milestones. Quitting."
         sys.exit()
 
-    POKY_VER = options.poky
     CODENAME = options.branch
     BRANCH = CODENAME
     REVISIONS = options.revs
-    DEFAULT_TAG = "-".join([BRANCH, POKY_VER])
+    DEFAULT_TAG = BRANCH
 
     # Note that we append the RELEASENOTES filename with the release it is for. i.e. RELEASENOTES.yocto-2.6
     # This is to avoid clobbering release notes for other releases that may be happening in parallel.
@@ -218,6 +212,8 @@ if __name__ == '__main__':
     do_errata(outfile, REL_TYPE)
 
     if REL_TYPE == "point":
+        outfile.write("\n---------------\n Contributors\n---------------\n")
+
         outfile.write("\n---------------\n Known Issues\n---------------\n")
         outfile.write("N/A\n\n")
         # We add known issues manually to the release notes.
