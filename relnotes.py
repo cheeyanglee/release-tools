@@ -37,7 +37,7 @@ from pygit2 import Repository, clone_repository, RemoteCallbacks
 from pygit2 import GIT_SORT_TIME, GIT_SORT_TOPOLOGICAL
 
 def get_repo(codename):
-    repo_url = 'http://git.yoctoproject.org/git/poky'
+    repo_url = 'git://git.yoctoproject.org/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
     if os.path.exists(repo_path):
@@ -64,9 +64,7 @@ def do_errata(outfile, REL_TYPE):
     files = glob.glob('*.bz2')
     allfiles = filter(lambda f: os.path.isfile(f), files)
     # For major release and point releases errata do not want to include meta-intel.
-    blob_list = [y for y in allfiles if not (y.startswith('meta-intel') or y.startswith('meta-openembedded') or \
-                                             y.startswith('meta-aws') or y.startswith('meta-arm') or \
-                                             y.startswith('meta-agl'))]
+    blob_list = [y for y in allfiles if not y.startswith(('meta-intel', 'meta-aws', 'meta-openembedded', 'meta-arm', 'meta-agl'))]
     blob_list.sort(reverse = True)
     for item in blob_list:
         chunks = split_thing(item, ".")
