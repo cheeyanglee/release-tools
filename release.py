@@ -383,5 +383,5 @@ if __name__ == '__main__':
         # 7) Generate the master sha256sum file for the release (for all releases, except milestones)
         print "Generating the master sha256sum table."
         logging.info('Generating the master sha256sum table.')
-        gen_rel_sha(RELEASE_DIR, REL_SHA_FILE)
+        gen_rel_sha256(RELEASE_DIR, REL_SHA_FILE)
         logging.info('Successful.')

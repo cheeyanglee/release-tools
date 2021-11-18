@@ -37,7 +37,7 @@ from pygit2 import Repository, clone_repository, RemoteCallbacks
 from pygit2 import GIT_SORT_TIME, GIT_SORT_TOPOLOGICAL
 
 def get_repo(codename):
-    repo_url = 'http://git.yoctoproject.org/git/poky'
+    repo_url = 'git://git.yoctoproject.org/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
     if os.path.exists(repo_path):
@@ -66,7 +66,7 @@ def do_errata(outfile, REL_TYPE):
     # Filter out the renamed blobs. We want the symlinks with the hashes.
     filelist = filter(lambda x: POKY_VER not in x, allfiles)
     # For major release and point releases errata do not want to include meta-intel.
-    blob_list = [y for y in filelist if not y.startswith('meta-intel')]
+    blob_list = [y for y in filelist if not y.startswith(('meta-intel', 'meta-aws', 'meta-openembedded', 'meta-arm', 'meta-agl'))]
     blob_list.sort(reverse = True)
     for item in blob_list:
         chunks = split_thing(item, ".")
