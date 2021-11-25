@@ -111,7 +111,7 @@ def do_errata(outfile, REL_TYPE):
         outfile.write("Branch: %s\n" %PROJECT_BRANCH)
         outfile.write("Tag: %s\n" %PROJECT_TAG)
         outfile.write("Git Revision: %s\n" %hash)
-        outfile.write("Release Arefact: %s\n" %RELEASE_NAME)
+        outfile.write("Release Artefact: %s\n" %RELEASE_NAME)
         outfile.write("sha: %s\n" %sha)
         outfile.write("Download Locations:\n")
         outfile.write(DL_URL + "\n")
