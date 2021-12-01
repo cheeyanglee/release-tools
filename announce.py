@@ -109,6 +109,7 @@ if __name__ == '__main__':
         CLOSING = "\nThank you.\n"
         hash_file = get_hashes(options.build)
         hash_path = os.path.join(HOME, hash_file)
+        SUBJECT = milestone + " for Yocto Project " + ID +  " (" + RELEASE + ")  Now Available"
 
     if REL_TYPE == "major" or REL_TYPE == "point":
         print "\nGenerating announcement for %s release %s." %(REL_TYPE, REL_ID)
@@ -120,9 +121,13 @@ if __name__ == '__main__':
         RELEASE_STR = "Yocto Project " + REL_ID +  " (" + DEFAULT_TAG + ") " + "Release"
         RELNOTES = "\nA gpg signed version of these release notes is available at:\n"
         CLOSING = "\nThank you for everyone's contributions to this release.\n"
+        SUBJECT = "Yocto Project " + REL_ID +  " (" + DEFAULT_TAG + ") is Released"
         print
     
     outfile = open(outpath, 'w')
+
+    print "\nSubject : %s\n\n" %SUBJECT
+    outfile.write("Subject : %s\n\n" %SUBJECT)
 
     GREETINGS = "We are pleased to announce the " + RELEASE_STR + " is now available for download."
     print GREETINGS
