@@ -118,6 +118,11 @@ def do_errata(outfile, REL_TYPE):
         outfile.write("Download Locations:\n")
         outfile.write(DL_URL + "\n")
         outfile.write(MIRROR_URL + "\n\n")
+    outfile.write("Repository Name: yocto-docs\n")
+    outfile.write("Repository Location: https://git.yoctoproject.org/git/yocto-docs\n")
+    outfile.write("Branch: %s\n" %PROJECT_BRANCH)
+    outfile.write("Tag: %s\n" %PROJECT_TAG)
+    outfile.write("Git Revision: <----------replace this with commit ID----------->\n\n")
     return
 
 if __name__ == '__main__':
