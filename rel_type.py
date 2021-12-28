@@ -23,8 +23,8 @@ def release_type(build_id):
     RC = split_thing(build_id, ".")[-1]
     foo = RC.find("rc")
     if foo == -1:
-        print "%s doesn't appear to be a valid RC candidate. Check your args." %build_id
-        print "Please use -h or --help for options."
+        print("%s doesn't appear to be a valid RC candidate. Check your args." %build_id)
+        print("Please use -h or --help for options.")
         sys.exit()
     chunks = split_thing(build_id, ".") # i.e. split yocto-2.1_m1.rc1
     chunks.pop()
@@ -46,8 +46,8 @@ def release_type(build_id):
     # This is here to catch anything that slips by or is a result of something unexpected
     # in all the splitting that happens above.
     if not (RELEASE and RC and REL_ID and REL_TYPE):
-        print "Can't determine the release type. Check your args."
-        print "You gave me: %s" %options.build
+        print("Can't determine the release type. Check your args.")
+        print("You gave me: %s" %options.build)
         sys.exit()
 
     # We obviously generate these values above as part of determining the release type, so we we just return them since we almost always need these anyway.
@@ -66,8 +66,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if not options.build:
-        print "You must provide the RC name. i.e. yocto-2.5.r1, yocto-2.5.1.rc2, yocto-2.6_M3.rc1, etc."
-        print "Please use -h or --help for options."
+        print("You must provide the RC name. i.e. yocto-2.5.r1, yocto-2.5.1.rc2, yocto-2.6_M3.rc1, etc.")
+        print("Please use -h or --help for options.")
         sys.exit()
 
     VARS = release_type(options.build)
@@ -79,4 +79,4 @@ if __name__ == '__main__':
     MILESTONE = VARS['MILESTONE']
 
     for thing in ['RC_DIR', 'RELEASE', 'REL_TYPE', 'RC', 'RELEASE', 'MILESTONE']:
-        print "%s: %s" %(thing, VARS[thing])
+        print("%s: %s" %(thing, VARS[thing]))

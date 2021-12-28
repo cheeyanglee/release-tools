@@ -61,17 +61,17 @@ if __name__ == '__main__':
 
     if options.build and options.version:
         BUILD_ID = options.build
-        print "BUILD_ID: %s" %BUILD_ID
+        print("BUILD_ID: %s" %BUILD_ID)
         REL_ID = options.version
-        print "REL_ID: %s\n" %REL_ID
+        print("REL_ID: %s\n" %REL_ID)
         
         SOURCE = os.path.join(TOOLS_BASE, BUILD_ID)
         RELEASE_DIR = os.path.join(DL_DIR, REL_ID)
         sanity_check(SOURCE, RELEASE_DIR)
         TOOLS_DIR = os.path.join(SOURCE, "toolchain")
     else:
-        print "Build ID and Release version are required arguments. Please check your args."
-        print "Please use -h or --help for options."
+        print("Build ID and Release version are required arguments. Please check your args.")
+        print("Please use -h or --help for options.")
         sys.exit()
 
     # Go find the poky commit that we built for the uninative release.
@@ -90,10 +90,10 @@ if __name__ == '__main__':
         os.mkdir(LINK_DIR)
     TARGET = os.path.join(LINK_DIR, REL_ID)
     if not os.path.islink(TARGET):
-       print "Creating symlink from %s to %s\n" %(RELEASE_DIR, TARGET)
+       print("Creating symlink from %s to %s\n" %(RELEASE_DIR, TARGET))
        os.symlink(RELEASE_DIR, TARGET)
     else:
-       print "Link to %s already exists. Might want to check on that." %TARGET
+       print("Link to %s already exists. Might want to check on that." %TARGET)
 
     # Take the poky commit and find the corresponding OE-Core revision.
     # We need this for tagging purposes for poky and openembedded-core.

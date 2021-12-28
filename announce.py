@@ -70,8 +70,8 @@ if __name__ == '__main__':
        RC_SOURCE = os.path.join(AB_BASE, RC_DIR)
        RELEASE_DIR = os.path.join(AB_BASE, RELEASE)
     else:
-       print "Build ID is a required argument."
-       print "Please use -h or --help for options."
+       print("Build ID is a required argument.")
+       print("Please use -h or --help for options.")
        sys.exit()
 
     CODENAME = options.branch
@@ -81,8 +81,8 @@ if __name__ == '__main__':
 
 
     if ((REL_TYPE == "point") or (REL_TYPE == "major")) and not (options.branch):
-        print "You need to specify the branch name for point or major releases."
-        print "Please use -h or --help for options."
+        print("You need to specify the branch name for point or major releases.")
+        print("Please use -h or --help for options.")
 
     # Find the release engineer name and email for email signature
     SIG = signature()
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     TITLE = "Yocto Project Build and Release"
             
     if REL_TYPE == "milestone":
-        print "\nGenerating announcement for %s release %s." %(REL_TYPE, REL_ID)
+        print("\nGenerating announcement for %s release %s." %(REL_TYPE, REL_ID))
         TYPE_STR = "milestones"
         DL_URL = "/".join([DL_BASE_URL, TYPE_STR, RELEASE]).strip()
         REPORT_URL = "/".join([DL_URL, TEST_REPORT]).strip()
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         SUBJECT = milestone + " for Yocto Project " + ID +  " (" + RELEASE + ")  Now Available"
 
     if REL_TYPE == "major" or REL_TYPE == "point":
-        print "\nGenerating announcement for %s release %s." %(REL_TYPE, REL_ID)
+        print("\nGenerating announcement for %s release %s." %(REL_TYPE, REL_ID))
         hash_file = get_hashes(options.build)
         hash_path = os.path.join(HOME, hash_file)
         f = open(hash_path, 'r')
@@ -132,53 +132,53 @@ if __name__ == '__main__':
     
     outfile = open(outpath, 'w')
 
-    print "\nSubject : %s\n\n" %SUBJECT
+    print("\nSubject : %s\n\n" %SUBJECT)
     outfile.write("Subject : %s\n\n" %SUBJECT)
 
     GREETINGS = "We are pleased to announce the " + RELEASE_STR + " is now available for download."
-    print GREETINGS
+    print(GREETINGS)
     outfile.write("%s\n" %GREETINGS)
 
     if REL_TYPE == "milestone":
-        print "\nDownload:\n"
+        print("\nDownload:\n")
         outfile.write("\nDownload:\n\n")
-        print "%s\n" %DL_URL
+        print("%s\n" %DL_URL)
         outfile.write("%s\n\n" %DL_URL)
         if os.path.isfile(hash_path):
             f = open(hash_path, 'r')
             milestone_hashes = f.read()
             f.close()
-            print milestone_hashes
+            print(milestone_hashes)
             outfile.writelines("%s" %milestone_hashes)
         else:
-            print "Can't find the hashes for the milestone. Quitting."
+            print("Can't find the hashes for the milestone. Quitting.")
             sys.exit()
-        print "Full Test Report:\n"
+        print("Full Test Report:\n")
         outfile.write("\nFull Test Report:\n\n")
-        print "%s" %REPORT_URL
+        print("%s" %REPORT_URL)
         outfile.write("%s\n" %REPORT_URL)
     if REL_TYPE == "point" or REL_TYPE == "major":
         print
-        print DL_URL
+        print(DL_URL)
         outfile.write("\n%s\n" %DL_URL)
-        print MIRROR_URL
+        print(MIRROR_URL)
         outfile.write("%s\n" %MIRROR_URL)
-        print RELNOTES
+        print(RELNOTES)
         outfile.write("%s\n" %RELNOTES)
-        print "%s\n" %RELNOTES_URL
+        print("%s\n" %RELNOTES_URL)
         outfile.write("%s\n" %RELNOTES_URL)
-        print "Full Test Report:\n"
+        print("Full Test Report:\n")
         outfile.write("\nFull Test Report:\n\n")
-        print REPORT_URL
+        print(REPORT_URL)
         outfile.write("%s\n" %REPORT_URL)
 
-    print CLOSING
+    print(CLOSING)
     outfile.write("%s\n" %CLOSING)
-    print FULL_NAME
+    print(FULL_NAME)
     outfile.write("%s\n" %FULL_NAME)
-    print EMAIL
+    print(EMAIL)
     outfile.write("%s\n" %EMAIL)
-    print TITLE
+    print(TITLE)
     outfile.write("%s\n" %TITLE)
     outfile.close()
 

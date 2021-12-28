@@ -26,11 +26,11 @@ def where_am_i():
     elif "autobuilder.yoctoproject.org" in abhost:
         VHOSTS = "/srv/www/vhosts"
     else:
-        print "I don't recognize this host, so defaulting to /srv/www/vhosts."
+        print("I don't recognize this host, so defaulting to /srv/www/vhosts.")
         # Uncomment this if you want to use /srv/autobuilder as the VHOSTS dir. It's useful for testing.
         #VHOSTS = "/srv/autobuilder"
         VHOSTS = "/srv/www/vhosts"
-        print "Setting VHOSTS to %s" %VHOSTS
+        print("Setting VHOSTS to %s" %VHOSTS)
     AB_HOME = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub") # uninative release (uninative.py) uses this
     AB_BASE = os.path.join(AB_HOME, "releases") # all RC candidates live here
     DL_HOME = os.path.join(VHOSTS, "downloads.yoctoproject.org/releases") # uninative release (uninative.py) uses this
@@ -82,22 +82,22 @@ def rejoin_thing(thing, marker):
 def sanity_check(source, target):
     if not os.path.exists(source):
        print
-       print "SOURCE dir %s does NOT EXIST." %source
+       print("SOURCE dir %s does NOT EXIST." %source)
        print
        sys.exit()
     if not os.listdir(source):
        print
-       print "SOURCE dir %s is EMPTY" %source
+       print("SOURCE dir %s is EMPTY" %source)
        print
     if os.path.exists(target):
        print
-       print "The TARGET directory %s already exists! " %target
+       print("The TARGET directory %s already exists! " %target)
        print
        sys.exit()
     return
 
 def sync_it(source, target):
-    print "Syncing %s to %s" %(source, target)
+    print("Syncing %s to %s" %(source, target))
     sanity_check(source, target)
     source = source + "/"
     os.system("rsync -avrl '%s' '%s'" %(source, target))
@@ -106,11 +106,11 @@ def sync_it(source, target):
 
 def check_rc(rc_source):
     if not os.path.isdir(rc_source):
-        print "I cannot find %s. Please check your RC name." %rc_source
-        print "Please use -h or --help for options."
+        print("I cannot find %s. Please check your RC name." %rc_source)
+        print("Please use -h or --help for options.")
         found = "False"
     else:
-        print "Found RC dir %s." %rc_source
+        print("Found RC dir %s." %rc_source)
         found = "True"
     return found
 
@@ -126,7 +126,7 @@ def get_sha256sum(path, blocksize = 4096):
 
 def gen_sha256sum(dirname):
     print
-    print "Generating sha256sums for files in %s...." %dirname
+    print("Generating sha256sums for files in %s...." %dirname)
     for root, dirs, files in os.walk(dirname, topdown=True):
         for name in files:
             filename = (os.path.join(root, name))
@@ -134,7 +134,7 @@ def gen_sha256sum(dirname):
                 sha256sum = get_sha256sum(filename)
                 sha256_file = ".".join([filename, 'sha256sum'])
                 sha256str = sha256sum + " " + name
-                print sha256str
+                print(sha256str)
                 f = open(sha256_file, 'w')
                 f.write(sha256str)
                 f.close()
@@ -142,7 +142,7 @@ def gen_sha256sum(dirname):
 
 def gen_rel_sha256(dirname, sha256_file):
     os.chdir(dirname)
-    print "Generating master sha256sum file %s" %sha256_file
+    print("Generating master sha256sum file %s" %sha256_file)
     f = open(sha256_file, 'w')
     for root, dirs, files in os.walk(dirname, topdown=True):
         for name in files:
@@ -156,11 +156,11 @@ def gen_rel_sha256(dirname, sha256_file):
                 relpath.pop(0)
                 relpath = rejoin_thing(relpath, "/")
                 relpath = "./" + relpath
-                print relpath
+                print(relpath)
                 sha256sum = get_sha256sum(filename)
-                print sha256sum
+                print(sha256sum)
                 sha256str = sha256sum + " " + relpath
-                print sha256str
+                print(sha256str)
                 f.write(sha256str + '\n')
     f.close()
     return
@@ -193,5 +193,5 @@ def get_hashes(rc_name):
         RELEASE_NAME = rejoin_thing(new_chunk, "-")
         outfile.write("%s: %s\n" %(RELEASE_NAME, hash))
     outfile.close()
-    print "Hashes written to %s\n" %HASH_FILE
+    print("Hashes written to %s\n" %HASH_FILE)
     return HASH_FILE

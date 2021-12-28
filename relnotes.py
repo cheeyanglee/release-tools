@@ -41,23 +41,23 @@ def get_repo(codename):
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
     if os.path.exists(repo_path):
-        print "\nFound an existing poky repo. Nuking it."
+        print("\nFound an existing poky repo. Nuking it.")
         rmtree(repo_path)
-    print "Cloning the poky repo."
+    print("Cloning the poky repo.")
     try:
         poky_repo = clone_repository(repo_url, repo_path, checkout_branch=codename)
     except:
-        print "Couldn't check out the poky repo with branch %s. Check the branch name you passed in." %codename
+        print("Couldn't check out the poky repo with branch %s. Check the branch name you passed in." %codename)
         sys.exit()
     # Are we where we think we are?
     poky_repo = Repository(repo_path)
     head = poky_repo.head
     branch_name = head.name
-    print "We are now on branch: %s\n" %branch_name
+    print("We are now on branch: %s\n" %branch_name)
     return poky_repo
 
 def do_errata(outfile, REL_TYPE):
-    print "Generating the Repositories/Downloads."
+    print("Generating the Repositories/Downloads.")
     outfile.write("\n--------------------------\n%s Release Notes\n--------------------------\n\n" %RELEASE)
     outfile.write("\n--------------------------\n Repositories/Downloads\n--------------------------\n\n")
     os.chdir(RC_SOURCE)
@@ -148,8 +148,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if not (options.build and options.branch and options.revs):
-        print "You must specify the RC, branch, and revision range."
-        print "Please use -h or --help for options."
+        print("You must specify the RC, branch, and revision range.")
+        print("Please use -h or --help for options.")
         sys.exit()
 
     if options.build:
@@ -162,16 +162,16 @@ if __name__ == '__main__':
        MILESTONE = VARS['MILESTONE']
        RC_SOURCE = os.path.join(AB_BASE, RC_DIR)
     else:
-       print "Build ID is a required argument."
-       print "Please use -h or --help for options."
+       print("Build ID is a required argument.")
+       print("Please use -h or --help for options.")
        sys.exit()
 
     for thing in ['RC_DIR', 'RELEASE', 'RC', 'REL_ID', 'REL_TYPE', 'MILESTONE']:
-        print "%s: %s" %(thing, VARS[thing])
-    print "RC_SOURCE: %s" %RC_SOURCE
+        print("%s: %s" %(thing, VARS[thing]))
+    print("RC_SOURCE: %s" %RC_SOURCE)
 
     if REL_TYPE == "milestone":
-        print "We don't do release notes or errata for milestones. Quitting."
+        print("We don't do release notes or errata for milestones. Quitting.")
         sys.exit()
 
     CODENAME = options.branch
@@ -220,7 +220,7 @@ if __name__ == '__main__':
         outfile.write("\n---------------\n Known Issues\n---------------\n")
         outfile.write("N/A\n\n")
         # We add known issues manually to the release notes.
-        print "Getting the Security Fixes for the release."
+        print("Getting the Security Fixes for the release.")
         outfile.write("\n---------------\nSecurity Fixes\n---------------\n")
     
         # Make sure the starting revision/tag exists.
@@ -230,7 +230,7 @@ if __name__ == '__main__':
         regex = re.compile('^refs/tags')
         tag_list = filter(lambda r: regex.match(r), repo.listall_references())
         if not start_rev in str(tag_list):
-            print "I can't find a ta:g matching %s. Check your revisions." %start_rev
+            print("I can't find a ta:g matching %s. Check your revisions." %start_rev)
             sys.exit()
 
         start = repo.revparse_single(head_rev)
@@ -244,13 +244,13 @@ if __name__ == '__main__':
             if 'CVE' in commit_title:
                 commit_id = str(commit.id)
                 # If you want to include the commit has, uncomment the lines with the commit_id.
-                print "%s" %commit_title
+                print("%s" %commit_title)
                 #print "%s: %s" %(commit_id[0:8], commit_title)
                 outfile.write("%s\n" %commit_title) 
                 #outfile.write("%s: %s\n" %(commit_id[0:8], commit_title))
-        print "DONE!"
+        print("DONE!")
 
-        print "Getting the Fixes for the release."
+        print("Getting the Fixes for the release.")
         outfile.write("\n\n---------------\nFixes\n---------------\n")
         walker.reset()
         walker = repo.walk(start.id, GIT_SORT_TOPOLOGICAL)
@@ -261,9 +261,9 @@ if __name__ == '__main__':
             if 'CVE' not in commit_title:
                 commit_id = str(commit.id)
                 # If you want to include the commit has, uncomment the lines with the commit_id.
-                print "%s" %commit_title
+                print("%s" %commit_title)
                 #print "%s: %s" %(commit_id[0:8], commit_title)
                 outfile.write("%s\n" %commit_title)
                 #outfile.write("%s: %s\n" %(commit_id[0:8], commit_title))
-    print "Done"
+    print("Done")
     outfile.close()

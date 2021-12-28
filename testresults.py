@@ -38,19 +38,19 @@ def get_repo(repo_url, repo_branch):
     repo_name = split_thing(repo_url, "/")[-1]
     repo_path = os.path.join(CWD, repo_name)
     if os.path.exists(repo_path):
-        print "\nFound an existing %s repo. Nuking it." %repo_name
+        print("\nFound an existing %s repo. Nuking it." %repo_name)
         rmtree(repo_path)
-    print "Cloning the %s repo." %repo_name
+    print("Cloning the %s repo." %repo_name)
     try:
         the_repo = clone_repository(repo_url, repo_path, checkout_branch=repo_branch)
     except:
-        print "Couldn't check out the %s repo with branch %s. Check the branch name you passed in." %(repo_name, repo_branch)
+        print("Couldn't check out the %s repo with branch %s. Check the branch name you passed in." %(repo_name, repo_branch))
         sys.exit()
     # Are we where we think we are?
     the_repo = Repository(repo_path)
     head = the_repo.head
     branch_name = head.name
-    print "We are now on branch: %s\n" %branch_name
+    print("We are now on branch: %s\n" %branch_name)
     return the_repo
 
 def get_poky_hash(rel_dir,rel_type, branch):
@@ -80,7 +80,7 @@ def get_revisions(logfile):
 
 def find_bogus(results_dir, branch, commit):
    status = "GOOD"
-   print "\nChecking the testresults for bogus branches and commits.\n"
+   print("\nChecking the testresults for bogus branches and commits.\n")
    for dirname, subdir_list, file_list in os.walk(results_dir):
        for fname in file_list:
            bogus = []
@@ -102,13 +102,13 @@ def find_bogus(results_dir, branch, commit):
                if not (meta_commit == commit and meta_poky_commit == commit and meta_yocto_bsp_commit == commit):
                    bogus.append("commit")
                if len(bogus) == 1:
-                   print "Bogus %s in %s" %(bogus[0], filename)
+                   print("Bogus %s in %s" %(bogus[0], filename))
                elif len(bogus) == 2:
-                   print "Both a bogus branch and commit in %s" %filename
+                   print("Both a bogus branch and commit in %s" %filename)
                if len(bogus) > 0:
-                   print "meta \t\t branch: %s \t commit: %s" %(meta_branch, meta_commit)
-                   print "meta-poky \t branch: %s \t commit: %s" %(meta_poky_branch, meta_poky_commit)
-                   print "meta-yocto_bsp \t branch: %s \t commit: %s" %(meta_yocto_bsp_branch, meta_yocto_bsp_commit)
+                   print("meta \t\t branch: %s \t commit: %s" %(meta_branch, meta_commit))
+                   print("meta-poky \t branch: %s \t commit: %s" %(meta_poky_branch, meta_poky_commit))
+                   print("meta-yocto_bsp \t branch: %s \t commit: %s" %(meta_yocto_bsp_branch, meta_yocto_bsp_commit))
                    status = "BAD"
                    print
    return status
@@ -116,7 +116,7 @@ def find_bogus(results_dir, branch, commit):
 def do_testreport(report_file, header_path):
     # Generate the testreport.
     outfile = open(report_file, 'a')
-    print "Generating the %s file." %report_file
+    print("Generating the %s file." %report_file)
     if os.path.isfile(header_path):
         infile = open(header_path, 'r')
     else:
@@ -124,7 +124,7 @@ def do_testreport(report_file, header_path):
         if os.path.isfile(header_path):
             infile = open(header_path, 'r')
         else:
-            print "Can't find a header file. Quitting."
+            print("Can't find a header file. Quitting.")
             sys.exit()
     all_the_things = infile.read()
     infile.close()
@@ -132,7 +132,7 @@ def do_testreport(report_file, header_path):
     outfile.flush()
     subprocess.call([RESULT_TOOL, "report", RC_SOURCE], stdout=outfile)
     outfile.close()
-    print "Done.\n"
+    print("Done.\n")
     return
  
 
@@ -158,9 +158,9 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if not (options.build and options.branch):
-        print "You must specify the RC and the codename/branch."
-        print "Note that milestones need the release codename. i.e. 2.8_M1 would use zeus."
-        print "Please use -h or --help for options."
+        print("You must specify the RC and the codename/branch.")
+        print("Note that milestones need the release codename. i.e. 2.8_M1 would use zeus.")
+        print("Please use -h or --help for options.")
         sys.exit()
 
     if options.build:
@@ -174,14 +174,14 @@ if __name__ == '__main__':
        RC_SOURCE = os.path.join(AB_BASE, RC_DIR)
        #RELEASE_DIR = os.path.join(AB_BASE, RELEASE)
     else:
-       print "Build ID is a required argument."
-       print "Please use -h or --help for options."
+       print("Build ID is a required argument.")
+       print("Please use -h or --help for options.")
        sys.exit()
 
     if REL_TYPE == "milestone":
         if options.branch == "master":
-            print "I need the release line for the milestone."
-            print "i.e. For 2.8_M1 it would be zeus. For 2.7_M1, it woutld be warrior. Etc."
+            print("I need the release line for the milestone.")
+            print("i.e. For 2.8_M1 it would be zeus. For 2.7_M1, it woutld be warrior. Etc.")
             sys.exit()
         else:
             POKY_BRANCH = "master"
@@ -210,20 +210,20 @@ if __name__ == '__main__':
 
     # Check to make sure that the release dir exists. If not, quit. Have to stage first.
     if not os.path.exists(RC_SOURCE):
-        print "Can't find a %s source directory. Please verify if source directory exists? Quitting." %RC_SOURCE
+        print("Can't find a %s source directory. Please verify if source directory exists? Quitting." %RC_SOURCE)
         sys.exit()
     # Check for testresults dir generated by the build. If not there, something is wrong with the build artefacts.
     if not os.path.exists(BUILD_RESULTS):
-        print "I can't find the build testresults directory. Can't continue. Check the build artefacts."
+        print("I can't find the build testresults directory. Can't continue. Check the build artefacts.")
         sys.exit()
     if not os.listdir(BUILD_RESULTS):
-        print "The build testresults directory appears to be empty. Can't continue. Check the build artefacts."
+        print("The build testresults directory appears to be empty. Can't continue. Check the build artefacts.")
         sys.exit()
     if os.path.exists(INTEL_RESULTS):
-        print "I found an existing testresults-intel directory. Refusing to clobber."
+        print("I found an existing testresults-intel directory. Refusing to clobber.")
         sys.exit()
     if os.path.isfile(REPORT_FILE):
-       print "I found an existing testreport.txt file. Refusing to clobber."
+       print("I found an existing testreport.txt file. Refusing to clobber.")
        sys.exit()
   
     # Get the repos
@@ -235,17 +235,17 @@ if __name__ == '__main__':
 
     # Get the poky build hash VINEELA: Check from here
     POKY_HASH = get_poky_hash(RC_SOURCE, REL_TYPE, POKY_BRANCH)
-    print "POKY_HASH: %s" %POKY_HASH
-    print "POKY_BRANCH: %s" %POKY_BRANCH
+    print("POKY_HASH: %s" %POKY_HASH)
+    print("POKY_BRANCH: %s" %POKY_BRANCH)
     
     # Now check for bad hashes, bogus branch names. The ONLY branch and commit has we should see
     # are the ones we just got above: POKY_HASH and _POKY_BRANCH.
     bogus = find_bogus(RESULTS_DIR, POKY_BRANCH, POKY_HASH)
     if bogus == "BAD":
-        print "Can't continue with bogus branch names or commits in testresults. Quitting.\n"
+        print("Can't continue with bogus branch names or commits in testresults. Quitting.\n")
         sys.exit()
     else:
-        print "No issues found.\n"
+        print("No issues found.\n")
 
     # Get the testresults from the contrib repo and put them in the RELEASE_DIR.
     copytree(RESULTS_DIR, INTEL_RESULTS)
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     do_testreport(REPORT_FILE, HEADER_PATH)
     
     # If we made it this far without dying, there should be only ONE revision in the resulttool output.
-    print "Running the resultool store command."
+    print("Running the resultool store command.")
     if os.path.exists(STORE_LOG):
         os.remove(STORE_LOG)
     store_log = open(STORE_LOG, "a")
@@ -263,13 +263,13 @@ if __name__ == '__main__':
 
    # See how many revisions we have as a final sanity check.
     revisions = get_revisions(STORE_LOG)
-    print "Revisions found: %s" %revisions
-    if revisions <> "1":
-        print "We should have ONLY ONE revision. Something is super wrong. Quitting.\n"
+    print("Revisions found: %s" %revisions)
+    if revisions != "1":
+        print("We should have ONLY ONE revision. Something is super wrong. Quitting.\n")
         sys.exit()
     else:
-        print "\nCheck the resulttool store log and make sure things look right."
+        print("\nCheck the resulttool store log and make sure things look right.")
         print
         store_log = open(STORE_LOG, "r")
         tool_output = store_log.read()
-        print tool_output
+        print(tool_output)
