@@ -25,29 +25,29 @@ def main(hash):
     repo_url = 'http://git.yoctoproject.org/git/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
-    print "repo_path: %s" %repo_path
+    print("repo_path: %s" %repo_path)
     if not os.path.exists(repo_path):
-        print "Repo doesn't exist."
-        print "Cloning the poky repo."
+        print("Repo doesn't exist.")
+        print("Cloning the poky repo.")
         repo = clone_repository(repo_url, repo_path, checkout_branch='master')
     else:
-        print "Found an existing poky repo. Reusing it.\n"
+        print("Found an existing poky repo. Reusing it.\n")
         repo = Repository(repo_path)
 
-    print "Build hash: %s" %hash
+    print("Build hash: %s" %hash)
     start = repo.get(hash)
     for commit in repo.walk(start.hex, GIT_SORT_TOPOLOGICAL):
         if 'OE-Core rev' in commit.message:
             raw = str(commit.message.rstrip())
             raw = raw.replace("\'", "\\")
             # We don't actually NEED the following commit, but it makes finding it in the git log easier should we want to look at the actual commit.
-            print "Poky Commit with OE-Core Rev: %s" %commit.hex
+            print("Poky Commit with OE-Core Rev: %s" %commit.hex)
             foo = raw.splitlines()
             for thing in foo:
                 if 'OE-Core rev' in thing:
                     thing = thing.replace('(From ', '')
                     thing = thing.replace(')', '')
-                    print thing
+                    print(thing)
             sys.exit()
 
 if __name__ == '__main__':

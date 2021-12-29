@@ -37,8 +37,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if not options.build:
-        print "You must specify the RC name. i.e. yocto-2.5.rc1, yocto-2.5.1.rc2, yocto-2.5_M3.rc1, etc."
-        print "Please use -h or --help for options."
+        print("You must specify the RC name. i.e. yocto-2.5.rc1, yocto-2.5.1.rc2, yocto-2.5_M3.rc1, etc.")
+        print("Please use -h or --help for options.")
         sys.exit()
 
     VARS = release_type(options.build)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         new_chunk = split_thing(chunks[0], '-')
         hash = new_chunk.pop()
         RELEASE_NAME = rejoin_thing(new_chunk, "-")
-        print "%s: %s" %(RELEASE_NAME, hash)
+        print("%s: %s" %(RELEASE_NAME, hash))
         outfile.write("%s: %s\n" %(RELEASE_NAME, hash))
     outfile.close()
-    print "\nHashes written to %s" %HASH_FILE
+    print("\nHashes written to %s" %HASH_FILE)
