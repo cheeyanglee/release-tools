@@ -1,48 +1,30 @@
 Some helpful info about using these scripts....
 
-Scripts prefixed with "meta" or "meta-intel" are intended for use with
-meta-intel BSP releases. These may ultimately move elsewhere, but for now there
-are only a couple, so for convenience of the release engineer, they reside here.
-
-Meta-intel scripts SHOULD NOT be used against Yocto releases, and vice versa.
-Weird things happen due to differences in naming schemes, what artificats gets
-published, and other factors. 
-
-There is one exception to this naming scheme, and that is utils.py. This is
-essentially a libary with some commonly reused functions. It is used by both the
-Yocto- and meta-intel- specific scripts. Meta-intel functionality SHOULD NOT be
-moved into utils.py for any reason.
-
-
 There are a few categories of scripts:
 
 - release scripts
-  * release.py (Yocto ONLY)
-  * uninative.py (Yocto)
+  * release.py
+  * uninative.py
   * unihash.py (used along with uninative.py for a uninative release)
-  * meta-intel.py (meta-intel ONLY)
 
 - release notes generation scripts
-  * relnotes.py (Yocto)
-  * meta-notes.py (meta-intel ONLY)
-  * meta-intelsec-info.txt (used with meta-notes.py to inject the security fixes
-    blurb into the release notes)
+  * relnotes.py 
 
 - utils/reused code
-  * utils.py (Yocto AND meta-intel)
+  * utils.py 
 
 - useful things
-  * get_cves.py (Yocto) Takes a revision range and spits out the CVES in the git
+  * get_cves.py  Takes a revision range and spits out the CVES in the git
     log between the revisions. Works for poky. Not intended to necessarily work
     elsewhere. This is handy if you have a release that does not include some CVE
     fixes, but you want to list them in the Known Issues in RELEASENOTES for that
     release. The 2.6 Thud release is an example. This script was used to generate
     the list included in the Known Issues for the Thud release. 
-  * get_hashes.py (Yocto. DOES NOT WORK with meta-intel) This looks in the RC
+  * get_hashes.py This looks in the RC
     directory and snags the hashes for the various tarballs we release. This
     info is passed to Michael Halstead who uses it for tagging repos. Also just
     generally useful. 
-  * rel_type.py (Yocto) This lives in utils.py (definitive version), but is kind of handy by itself
+  * rel_type.py This lives in utils.py (definitive version), but is kind of handy by itself
     from time to time. 
   * where_am_i.py This snippet looks at the hostname and make a guess as to what
     path the autobuilder output will be found. The legacy path was
@@ -52,11 +34,6 @@ There are a few categories of scripts:
    (definitive version), but is occasionally useful standalone.
 
 Since usage help is available in each script, it is not included here.
-
-Please note that since meta-intel is an Intel BSP release, and the scripts are
-only included in this repo for convenience, for the time being, details on using
-them, and the meta-intel release process, are not covered here. 
-
 
 Yocto Release Process
 =====================
@@ -115,16 +92,16 @@ repackage the :wq
 Contributing
 ============
 
-This module is owned by Vineela Tummalapalli <vineela.tummalapalli@intel.com>.
+This module is owned by Lee Chee Yang <chee.yang.lee@intel.com>.
 
 Patches should be sent via git-send-email to the yocto@yoctoproject.org mailing list with
-[release-tools] in the subject, CC'd to Vineela.
+[release-tools] in the subject, CC'd to Chee Yang.
 
 The following commands will configure this if ran inside a clone of release-tools:
 
 $ git config  --local --add format.subjectprefix 'PATCH release-tools'
 $ git config  --local --add sendemail.to yocto@yoctoproject.org
-$ git config  --local --add sendemail.cc vineela.tummalapalli@intel.com
+$ git config  --local --add sendemail.cc chee.yang.lee@intel.com
 
 Then sending a patch is as simple as:
 
