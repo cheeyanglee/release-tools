@@ -24,14 +24,13 @@ import sys
 import subprocess
 import glob
 import shutil
-import pygit2
 import json
 import collections
+import git
 from pprint import pprint
 from shutil import rmtree, copytree, copyfile
 from utils import where_am_i, split_thing
 from rel_type import release_type
-from pygit2 import Repository, clone_repository, RemoteCallbacks
 
 def get_repo(repo_url, repo_branch):
     CWD = os.getcwd()
@@ -42,26 +41,25 @@ def get_repo(repo_url, repo_branch):
         rmtree(repo_path)
     print("Cloning the %s repo." %repo_name)
     try:
-        the_repo = clone_repository(repo_url, repo_path, checkout_branch=repo_branch)
+        the_repo = git.Repo.clone_from(repo_url, repo_path)
+        the_repo.git.checkout(repo_branch)
     except:
         print("Couldn't check out the %s repo with branch %s. Check the branch name you passed in." %(repo_name, repo_branch))
         sys.exit()
     # Are we where we think we are?
-    the_repo = Repository(repo_path)
-    head = the_repo.head
-    branch_name = head.name
+    branch_name = the_repo.head.ref
     print("We are now on branch: %s\n" %branch_name)
     return the_repo
 
 def get_poky_hash(rel_dir,rel_type, branch):
     os.chdir(RC_SOURCE)
     files = glob.glob('*.bz2')
-    allfiles = filter(lambda f: os.path.isfile(f), files)
-    dirlist = filter(lambda x: "poky" in x, allfiles)
+    allfiles = list(filter(lambda f: os.path.isfile(f), files))
+    dirlist = list(filter(lambda x: "poky" in x, allfiles))
     if rel_type == "milestone":
         thing = dirlist[0]
     else:
-        filelist = filter(lambda x: branch not in x, dirlist)
+        filelist = list(filter(lambda x: branch not in x, dirlist))
         thing = filelist[0]
     chunks = split_thing(thing, ".")
     new_chunk = split_thing(chunks[0], '-')
