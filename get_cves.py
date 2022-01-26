@@ -20,13 +20,12 @@ import os
 import optparse
 import sys
 import os.path
+import git
 from shutil import rmtree
-from pygit2 import Repository, clone_repository
-from pygit2 import GIT_SORT_TOPOLOGICAL
 from utils import split_thing
 
 def get_repo(codename):
-    repo_url = 'http://git.yoctoproject.org/git/poky'
+    repo_url = 'https://git.yoctoproject.org/git/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
     if os.path.exists(repo_path):
@@ -34,13 +33,13 @@ def get_repo(codename):
         rmtree(repo_path)
     print("Cloning the poky repo.")
     try:
-        poky_repo =clone_repository(repo_url, repo_path, checkout_branch=codename)
+        poky_repo = git.Repo.clone_from(repo_url, repo_path)
+        poky_repo.git.checkout(codename)
     except:
         print("Couldn't check out the poky repo with branch %s. Check the branch name you passed in." %codename)
         sys.exit()
     # Are we where we think we are?
-    head = poky_repo.head
-    branch_name = head.name
+    branch_name = poky_repo.head.ref
     print("We are now on branch: %s\n" %branch_name)
     return poky_repo
 
@@ -74,35 +73,13 @@ if __name__ == '__main__':
     # Clone the repo
     repo = get_repo(BRANCH)
 
-    # Figure out where to start and end.
-    rev_chunks = split_thing(REVISIONS, "..")
-    start_rev = rev_chunks[0]  # The starting commit
-    head_rev = rev_chunks[1] # This is usually going to be the HEAD of the branch we are on, but could be whatever you want
-    print("Start_rev: %s" %start_rev)
-    print("Head_rev: %s" %head_rev)
-    print
-
     outpath = os.path.join(HOME, CVE_REPORT)
     outfile = open(outpath, 'w')
     outfile.write("\n---------------\nSecurity Fixes\n---------------\n")
-
-    start = repo.revparse_single(head_rev)
-    end = repo.revparse_single(start_rev)
-    print("Start ID (TIP/HEAD): %s" %start.id)
-    print("End ID: %s" %end.id)
-    print
-
-    walker = repo.walk(start.id, GIT_SORT_TOPOLOGICAL)
-    walker.hide(end.id)
-    for commit in walker:
-        raw_message = commit.message.encode('utf-8').rstrip()
-        commit_title = raw_message.splitlines()[0]
-        if 'CVE' in commit_title:
-            commit_id = str(commit.id)
-            #print "%s" %commit_title 
-            print("%s: %s" %(commit_id[0:8], commit_title))
-            # If you want to include the commit hash, uncomment this one.
-            outfile.write("%s: %s\n" %(commit_id[0:8], commit_title))
-            #outfile.write("%s\n" %commit_title)
+    for commit in repo.iter_commits(REVISIONS):
+        if 'CVE' in commit.summary:
+            commit_id = commit.hexsha
+            print("%s: %s" %(commit_id[0:8], commit.summary))
+            outfile.write("%s: %s\n" %(commit_id[0:8], commit.summary))
     outfile.close()
     print("DONE!")
