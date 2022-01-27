@@ -32,7 +32,7 @@ from shutil import rmtree, copytree, copyfile
 from utils import where_am_i, split_thing
 from rel_type import release_type
 
-def get_repo(repo_url, repo_branch):
+def get_repo(repo_url, repo_branch, single_branch=False):
     CWD = os.getcwd()
     repo_name = split_thing(repo_url, "/")[-1]
     repo_path = os.path.join(CWD, repo_name)
@@ -41,8 +41,7 @@ def get_repo(repo_url, repo_branch):
         rmtree(repo_path)
     print("Cloning the %s repo." %repo_name)
     try:
-        the_repo = git.Repo.clone_from(repo_url, repo_path)
-        the_repo.git.checkout(repo_branch)
+        the_repo = git.Repo.clone_from(repo_url, repo_path, branch=repo_branch, single_branch=single_branch )
     except:
         print("Couldn't check out the %s repo with branch %s. Check the branch name you passed in." %(repo_name, repo_branch))
         sys.exit()
@@ -227,8 +226,8 @@ if __name__ == '__main__':
     # Get the repos
     # We always use master for poky because we want the resulttool from master.
     poky_repo = get_repo(POKY_REPO, "master")     # would we want this to be master-next? What id definitive version of resulttool?
-    contrib_repo = get_repo(CONTRIB_REPO, CODENAME)
-    results_repo = get_repo(RESULTS_REPO, POKY_BRANCH)
+    contrib_repo = get_repo(CONTRIB_REPO, CODENAME, single_branch=True)
+    results_repo = get_repo(RESULTS_REPO, POKY_BRANCH, single_branch=True)
 
 
     # Get the poky build hash VINEELA: Check from here
