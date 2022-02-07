@@ -22,9 +22,17 @@ import sys
 import socket
 
 def where_am_i():
+    hosts = ["ubuntu2004-ty-1", "ubuntu2004-ty-2", "ubuntu1804-ty-1", "ubuntu1804-ty-2", "ubuntu1804-ty-3", "ubuntu1604-ty-1",
+                "centos7-ty-1", "centos7-ty-2", "centos7-ty-3", "centos7-ty-4", "centos8-ty-1", "centos8-ty-2",
+                "fedora29-ty-1", "fedora30-ty-1", "fedora30-ty-2",
+                "debian8-ty-1", "debian9-ty-2", "debian10-ty-1", "debian10-ty-2", "debian10-ty-3",
+                "tumbleweed-ty-1", "tumbleweed-ty-2", "tumbleweed-ty-3", "opensuse151-ty-1", "opensuse150-ty-1",
+                "ubuntu1804-ty-1", "ubuntu1804-ty-2", "ubuntu1804-ty-3",
+                "perf-ubuntu1604", "perf-centos7",
+                "ubuntu1804-arm-1"]
     abhost = socket.getfqdn()
     print "ABHOST: %s" %abhost
-    if "yocto.io" in abhost:
+    if "yocto.io" in abhost or abhost in hosts:
         VHOSTS = "/srv/autobuilder"
     elif "autobuilder.yoctoproject.org" in abhost:
         VHOSTS = "/srv/www/vhosts"
