@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     os.chdir(RC_SOURCE)
     files = glob.glob('*.bz2')
-    filelist = filter(lambda f: os.path.isfile(f), files)
+    filelist = list(filter(lambda f: os.path.isfile(f), files))
     filelist.sort()
     outfile = open(outpath, 'w')
     for item in filelist:

@@ -27,7 +27,7 @@ def get_build_hash(source_dir):
     # This looks in the build directory and gets the hash from the poky tarball.
     os.chdir(source_dir)
     files = glob.glob('*.bz2')
-    poky_blob = filter(lambda x: 'poky' in x, files).pop()
+    poky_blob = list(filter(lambda x: 'poky' in x, files)).pop()
     chunks = split_thing(poky_blob, ".")
     hash = split_thing(chunks[0], '-').pop()
     os.chdir(WORK_DIR)
