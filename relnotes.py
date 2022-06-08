@@ -213,6 +213,13 @@ if __name__ == '__main__':
 
     if REL_TYPE == "point":
         outfile.write("\n---------------\n Contributors\n---------------\n")
+        contributors = []
+        for commit in repo.iter_commits(REVISIONS):
+            if commit.author.name not in contributors:
+                contributors.append(commit.author.name)
+        for contributor in sorted(contributors):
+            outfile.write("%s\n" % contributor)
+            print(contributor)
 
         outfile.write("\n---------------\n Known Issues\n---------------\n")
         outfile.write("N/A\n\n")
