@@ -112,7 +112,8 @@ def do_errata(outfile, rstfile, REL_TYPE):
                     REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
                     REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
                     REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
-                    PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
+                    PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (BITBAKE_BRANCH, REPO_NAME, BITBAKE_BRANCH)
+                    PROJECT_BRANCH = BITBAKE_BRANCH
             elif name_chunks[0] == "oecore":
                 REPO_NAME = "openembedded-core"
                 REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
@@ -197,6 +198,10 @@ if __name__ == '__main__':
     parser.add_option("-r", "--revisions",
                       type="string", dest="revs",
                       help="Required. Specify the revision range to use for the git log. i.e. yocto-2.0.1 would use yocto-2.0..HEAD. ")
+    parser.add_option("--bitbake_branch",
+                      type="string", dest="bitbake_branch",
+                      help="Branch for bitbake. i.e: 1.50, 1.52, 2.0.")
+
     (options, args) = parser.parse_args()
 
     if not (options.build and options.branch and options.revs):
@@ -230,6 +235,7 @@ if __name__ == '__main__':
     BRANCH = CODENAME
     REVISIONS = options.revs
     DEFAULT_TAG = BRANCH
+    BITBAKE_BRANCH = options.bitbake_branch
 
     # Note that we append the RELEASENOTES filename with the release it is for. i.e. RELEASENOTES.yocto-2.6
     # This is to avoid clobbering release notes for other releases that may be happening in parallel.
