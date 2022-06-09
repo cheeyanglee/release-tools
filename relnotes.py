@@ -30,9 +30,15 @@ import shutil
 import git
 import datetime
 import re
+from enum import Enum
 from shutil import rmtree, copyfile
 from utils import where_am_i, split_thing, rejoin_thing
 from rel_type import release_type
+
+class Sections(Enum):
+    Title = "="
+    Section = "-"
+    Subsection = "~"
 
 def get_repo(codename):
     repo_url = 'https://git.yoctoproject.org/git/poky'
@@ -53,10 +59,14 @@ def get_repo(codename):
     print("We are now on branch: %s\n" %branch_name)
     return poky_repo
 
-def do_errata(outfile, REL_TYPE):
+def do_errata(outfile, rstfile, REL_TYPE):
     print("Generating the Repositories/Downloads.")
     outfile.write("\n--------------------------\n%s Release Notes\n--------------------------\n\n" %RELEASE)
     outfile.write("\n--------------------------\n Repositories/Downloads\n--------------------------\n\n")
+
+    rstfile.write( cast_to_rst_sections("Release notes for %s (%s)" % ( RELEASE.capitalize(), BRANCH.capitalize()), Sections.Section))
+    rstfile.write( cast_to_rst_sections("Repositories / Downloads for %s" % RELEASE.capitalize(), Sections.Subsection) )
+
     os.chdir(RC_SOURCE)
     files = glob.glob('*.bz2')
     allfiles = filter(lambda f: os.path.isfile(f), files)
@@ -95,14 +105,26 @@ def do_errata(outfile, REL_TYPE):
                 REPO_NAME = name_chunks[0]
                 if REPO_NAME == "poky":
                     REPO_URL = "/".join(["https://git.yoctoproject.org/git",REPO_NAME])
+                    REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                    REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                    PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
                 else:
                     REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+                    REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                    REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                    PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
             elif name_chunks[0] == "oecore":
                 REPO_NAME = "openembedded-core"
                 REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+                REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
             else:
                 REPO_NAME = "-".join([name_chunks[0], name_chunks[1]])
                 REPO_URL = "/".join(["https://git.yoctoproject.org/git",REPO_NAME])
+                REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
         outfile.write("Repository Name: %s\n" %REPO_NAME)
         outfile.write("Repository Location: %s\n" %REPO_URL)
         outfile.write("Branch: %s\n" %PROJECT_BRANCH)
@@ -113,12 +135,45 @@ def do_errata(outfile, REL_TYPE):
         outfile.write("Download Locations:\n")
         outfile.write(DL_URL + "\n")
         outfile.write(MIRROR_URL + "\n\n")
+
+        rstfile.write("%s\n\n" %REPO_NAME)
+        rstfile.write("-  Repository Location: %s\n" %REPO_URL)
+        rstfile.write("-  Branch: %s\n" % PROJECT_BRANCH_RST)
+        rstfile.write("-  Tag:  %s\n" % REPO_TAG_RST)
+        rstfile.write("-  Git Revision: %s\n" %REPO_HASH_RST)
+        rstfile.write("-  Release Artefact: %s\n" %RELEASE_NAME)
+        rstfile.write("-  sha: %s\n" %sha)
+        rstfile.write("-  Download Locations:\n")
+        rstfile.write("   %s" % DL_URL + "\n")
+        rstfile.write("   %s\n\n" % MIRROR_URL)
+
     outfile.write("Repository Name: yocto-docs\n")
     outfile.write("Repository Location: https://git.yoctoproject.org/git/yocto-docs\n")
     outfile.write("Branch: %s\n" %PROJECT_BRANCH)
     outfile.write("Tag: %s\n" %PROJECT_TAG)
     outfile.write("Git Revision: <----------replace this with commit ID----------->\n\n")
+
+    rstfile.write("yocto-docs\n\n")
+    rstfile.write("-  Repository Location: https://git.yoctoproject.org/git/yocto-docs\n")
+    rstfile.write("-  Branch: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (BRANCH, BRANCH))
+    rstfile.write("-  Tag: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (RELEASE, RELEASE))
+    rstfile.write("-  Git Revision: :yocto_git:`TBD </yocto-docs/commit/?id=TBD>`\n\n")
+
     return
+
+def cast_cve_to_rst_format(line):
+    pattern = r"cve-[0-9]*-[0-9]*"
+    match_line = re.findall(pattern, line, flags=re.I)
+    if match_line:
+        for cve in match_line:
+            tmp = "%s`" % re.sub("cve-",":cve:`", cve, flags=re.I)
+            line = re.sub(cve, tmp, line, flags=re.I)
+        return line
+    else:
+        return line
+
+def cast_to_rst_sections(line, sections):
+    return line + "\n" + (sections.value * len(line)) + "\n\n"
 
 if __name__ == '__main__':
 
@@ -186,6 +241,7 @@ if __name__ == '__main__':
     HOME = os.getcwd()
     POKY_REPO = os.path.join(HOME, "poky")
     outpath = os.path.join(HOME, RELEASE_NOTES)
+    rstpath = os.path.join(HOME, "%s.rst" % RELEASE_NOTES)
 
     ''' About tagging...
     The default tag is of format <branch>-<poky_ver>. i.e. sumo-19.0.0, thud-20.0.0
@@ -205,41 +261,56 @@ if __name__ == '__main__':
     '''
     
     outfile = open(outpath, 'w')
+    rstfile = open(rstpath, 'w')
 
     # Get the poky repo now so we can do all the things.
     repo = get_repo(BRANCH)
    
-    do_errata(outfile, REL_TYPE)
+    do_errata(outfile,rstfile, REL_TYPE)
 
     if REL_TYPE == "point":
         outfile.write("\n---------------\n Contributors\n---------------\n")
+        rstfile.write( "\n" + cast_to_rst_sections("Contributors to %s" % RELEASE.capitalize(), Sections.Subsection))
         contributors = []
         for commit in repo.iter_commits(REVISIONS):
             if commit.author.name not in contributors:
                 contributors.append(commit.author.name)
         for contributor in sorted(contributors):
             outfile.write("%s\n" % contributor)
+            rstfile.write("-  %s\n" % contributor )
             print(contributor)
 
         outfile.write("\n---------------\n Known Issues\n---------------\n")
         outfile.write("N/A\n\n")
+        
+        rstfile.write("\n" + cast_to_rst_sections("Known Issues in %s" % RELEASE.capitalize(), Sections.Subsection))
+        rstfile.write("Example link for bug : \n- :yocto_bugs:`bsps-hw.bsps-hw.Test_Seek_bar_and_volume_control manual test case failure </show_bug.cgi?id=14622>`\n\n")
+
         # We add known issues manually to the release notes.
         print("Getting the Security Fixes for the release.")
         outfile.write("\n---------------\nSecurity Fixes\n---------------\n")
-    
+   
+        rstfile.write( "\n" + cast_to_rst_sections("Security Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
+
         for commit in repo.iter_commits(REVISIONS):
             if 'CVE' in commit.summary:
                 # add commit.hexsha to print if commit id required
                 print("%s" % commit.summary)
                 outfile.write("%s\n" % commit.summary)
+                rstfile.write("-  %s\n" % cast_cve_to_rst_format(commit.summary))
         print("DONE!")
 
         print("Getting the Fixes for the release.")
         outfile.write("\n\n---------------\nFixes\n---------------\n")
+
+        rstfile.write( "\n" + cast_to_rst_sections("Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
+
         for commit in repo.iter_commits(REVISIONS):
             if 'CVE' not in commit.summary:
                 # add commit.hexsha to print if commit id required
                 print("%s" % commit.summary)
                 outfile.write("%s\n" % commit.summary)
+                rstfile.write("-  %s\n" % commit.summary)
     print("Done")
     outfile.close()
+    rstfile.close()
