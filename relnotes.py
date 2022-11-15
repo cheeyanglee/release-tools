@@ -41,7 +41,7 @@ class Sections(Enum):
     Subsection = "~"
 
 def get_repo(codename):
-    repo_url = 'https://git.yoctoproject.org/git/poky'
+    repo_url = 'https://git.yoctoproject.org/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
     if os.path.exists(repo_path):
@@ -104,7 +104,7 @@ def do_errata(outfile, rstfile, REL_TYPE):
             if name_chunks[0] == "poky" or name_chunks[0] == "bitbake":
                 REPO_NAME = name_chunks[0]
                 if REPO_NAME == "poky":
-                    REPO_URL = "/".join(["https://git.yoctoproject.org/git",REPO_NAME])
+                    REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
                     REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
                     REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
                     PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
@@ -122,7 +122,7 @@ def do_errata(outfile, rstfile, REL_TYPE):
                 PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
             else:
                 REPO_NAME = "-".join([name_chunks[0], name_chunks[1]])
-                REPO_URL = "/".join(["https://git.yoctoproject.org/git",REPO_NAME])
+                REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
                 REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
                 REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
                 PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
@@ -149,13 +149,13 @@ def do_errata(outfile, rstfile, REL_TYPE):
         rstfile.write("   %s\n\n" % MIRROR_URL)
 
     outfile.write("Repository Name: yocto-docs\n")
-    outfile.write("Repository Location: https://git.yoctoproject.org/git/yocto-docs\n")
+    outfile.write("Repository Location: https://git.yoctoproject.org/yocto-docs\n")
     outfile.write("Branch: %s\n" %PROJECT_BRANCH)
     outfile.write("Tag: %s\n" %PROJECT_TAG)
     outfile.write("Git Revision: <----------replace this with commit ID----------->\n\n")
 
     rstfile.write("yocto-docs\n\n")
-    rstfile.write("-  Repository Location: https://git.yoctoproject.org/git/yocto-docs\n")
+    rstfile.write("-  Repository Location: https://git.yoctoproject.org/yocto-docs\n")
     rstfile.write("-  Branch: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (BRANCH, BRANCH))
     rstfile.write("-  Tag: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (RELEASE, RELEASE))
     rstfile.write("-  Git Revision: :yocto_git:`TBD </yocto-docs/commit/?id=TBD>`\n\n")
