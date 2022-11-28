@@ -105,11 +105,13 @@ def do_errata(outfile, rstfile, REL_TYPE):
                 REPO_NAME = name_chunks[0]
                 if REPO_NAME == "poky":
                     REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
+                    REPO_URL_RST = ":yocto_git:`/%s`"  % REPO_NAME
                     REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
                     REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
                     PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
                 else:
                     REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+                    REPO_URL_RST = ":oe_git:`/%s`"  % REPO_NAME
                     REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
                     REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
                     PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (BITBAKE_BRANCH, REPO_NAME, BITBAKE_BRANCH)
@@ -117,12 +119,14 @@ def do_errata(outfile, rstfile, REL_TYPE):
             elif name_chunks[0] == "oecore":
                 REPO_NAME = "openembedded-core"
                 REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+                REPO_URL_RST = ":oe_git:`/%s`"  % REPO_NAME
                 REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
                 REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
                 PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
             else:
                 REPO_NAME = "-".join([name_chunks[0], name_chunks[1]])
                 REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
+                REPO_URL_RST = ":yocto_git:`/%s`"  % REPO_NAME
                 REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
                 REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
                 PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
@@ -138,7 +142,7 @@ def do_errata(outfile, rstfile, REL_TYPE):
         outfile.write(MIRROR_URL + "\n\n")
 
         rstfile.write("%s\n\n" %REPO_NAME)
-        rstfile.write("-  Repository Location: %s\n" %REPO_URL)
+        rstfile.write("-  Repository Location: %s\n" %REPO_URL_RST)
         rstfile.write("-  Branch: %s\n" % PROJECT_BRANCH_RST)
         rstfile.write("-  Tag:  %s\n" % REPO_TAG_RST)
         rstfile.write("-  Git Revision: %s\n" %REPO_HASH_RST)
@@ -155,7 +159,7 @@ def do_errata(outfile, rstfile, REL_TYPE):
     outfile.write("Git Revision: <----------replace this with commit ID----------->\n\n")
 
     rstfile.write("yocto-docs\n\n")
-    rstfile.write("-  Repository Location: https://git.yoctoproject.org/yocto-docs\n")
+    rstfile.write("-  Repository Location: :yocto_git:`/yocto-docs`\n")
     rstfile.write("-  Branch: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (BRANCH, BRANCH))
     rstfile.write("-  Tag: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (RELEASE, RELEASE))
     rstfile.write("-  Git Revision: :yocto_git:`TBD </yocto-docs/commit/?id=TBD>`\n\n")
