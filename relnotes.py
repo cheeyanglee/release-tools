@@ -147,6 +147,11 @@ if __name__ == '__main__':
     outpath = os.path.join(HOME, RELEASE_NOTES)
     rstpath = os.path.join(HOME, "%s.rst" % RELEASE_NOTES)
 
+    ARTEFACTS_RST = ""
+    CONTRIBUTOR_RST = ""
+    CVE_RST = ""
+    FIXES_RST = ""
+
     ''' About tagging...
     The default tag is of format <branch>-<poky_ver>. i.e. sumo-19.0.0, thud-20.0.0
     However, there are some exceptions to that, such as bitbake, eclipse, and oe-core.
@@ -173,9 +178,6 @@ if __name__ == '__main__':
     print("Generating the Repositories/Downloads.")
     outfile.write("\n--------------------------\n%s Release Notes\n--------------------------\n\n" %RELEASE)
     outfile.write("\n--------------------------\n Repositories/Downloads\n--------------------------\n\n")
-
-    rstfile.write( cast_to_rst_sections("Release notes for %s (%s)" % ( RELEASE.capitalize(), BRANCH.capitalize()), Sections.Section))
-    rstfile.write( cast_to_rst_sections("Repositories / Downloads for %s" % RELEASE.capitalize(), Sections.Subsection) )
 
     os.chdir(RC_SOURCE)
     files = glob.glob('*.bz2')
@@ -251,16 +253,16 @@ if __name__ == '__main__':
         outfile.write(DL_URL + "\n")
         outfile.write(MIRROR_URL + "\n\n")
 
-        rstfile.write("%s\n\n" %REPO_NAME)
-        rstfile.write("-  Repository Location: %s\n" %REPO_URL_RST)
-        rstfile.write("-  Branch: %s\n" % PROJECT_BRANCH_RST)
-        rstfile.write("-  Tag:  %s\n" % REPO_TAG_RST)
-        rstfile.write("-  Git Revision: %s\n" %REPO_HASH_RST)
-        rstfile.write("-  Release Artefact: %s\n" %RELEASE_NAME)
-        rstfile.write("-  sha: %s\n" %sha)
-        rstfile.write("-  Download Locations:\n")
-        rstfile.write("   %s" % DL_URL + "\n")
-        rstfile.write("   %s\n\n" % MIRROR_URL)
+        ARTEFACTS_RST += "%s\n\n" %REPO_NAME
+        ARTEFACTS_RST += "-  Repository Location: %s\n" %REPO_URL_RST
+        ARTEFACTS_RST += "-  Branch: %s\n" % PROJECT_BRANCH_RST
+        ARTEFACTS_RST += "-  Tag:  %s\n" % REPO_TAG_RST
+        ARTEFACTS_RST += "-  Git Revision: %s\n" %REPO_HASH_RST
+        ARTEFACTS_RST += "-  Release Artefact: %s\n" %RELEASE_NAME
+        ARTEFACTS_RST += "-  sha: %s\n" %sha
+        ARTEFACTS_RST += "-  Download Locations:\n"
+        ARTEFACTS_RST += "   %s" % DL_URL + "\n"
+        ARTEFACTS_RST += "   %s\n\n" % MIRROR_URL
 
     outfile.write("Repository Name: yocto-docs\n")
     outfile.write("Repository Location: https://git.yoctoproject.org/yocto-docs\n")
@@ -268,55 +270,66 @@ if __name__ == '__main__':
     outfile.write("Tag: %s\n" %PROJECT_TAG)
     outfile.write("Git Revision: <----------replace this with commit ID----------->\n\n")
 
-    rstfile.write("yocto-docs\n\n")
-    rstfile.write("-  Repository Location: :yocto_git:`/yocto-docs`\n")
-    rstfile.write("-  Branch: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (BRANCH, BRANCH))
-    rstfile.write("-  Tag: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (RELEASE, RELEASE))
-    rstfile.write("-  Git Revision: :yocto_git:`TBD </yocto-docs/commit/?id=TBD>`\n\n")
+    ARTEFACTS_RST += "yocto-docs\n\n"
+    ARTEFACTS_RST += "-  Repository Location: :yocto_git:`/yocto-docs`\n"
+    ARTEFACTS_RST += "-  Branch: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (BRANCH, BRANCH)
+    ARTEFACTS_RST += "-  Tag: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (RELEASE, RELEASE)
+    ARTEFACTS_RST += "-  Git Revision: :yocto_git:`TBD </yocto-docs/commit/?id=TBD>`\n\n"
 
     if REL_TYPE == "point":
         outfile.write("\n---------------\n Contributors\n---------------\n")
-        rstfile.write( "\n" + cast_to_rst_sections("Contributors to %s" % RELEASE.capitalize(), Sections.Subsection))
         contributors = []
         for commit in repo.iter_commits(REVISIONS):
             if commit.author.name not in contributors:
                 contributors.append(commit.author.name)
         for contributor in sorted(contributors):
             outfile.write("%s\n" % contributor)
-            rstfile.write("-  %s\n" % contributor )
+            CONTRIBUTOR_RST += "-  %s\n" % contributor
             print(contributor)
 
         outfile.write("\n---------------\n Known Issues\n---------------\n")
         outfile.write("N/A\n\n")
-        
-        rstfile.write("\n" + cast_to_rst_sections("Known Issues in %s" % RELEASE.capitalize(), Sections.Subsection))
-        rstfile.write("Example link for bug : \n- :yocto_bugs:`bsps-hw.bsps-hw.Test_Seek_bar_and_volume_control manual test case failure </show_bug.cgi?id=14622>`\n\n")
 
         # We add known issues manually to the release notes.
         print("Getting the Security Fixes for the release.")
         outfile.write("\n---------------\nSecurity Fixes\n---------------\n")
-   
-        rstfile.write( "\n" + cast_to_rst_sections("Security Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
 
         for commit in repo.iter_commits(REVISIONS):
             if 'CVE' in commit.summary:
                 # add commit.hexsha to print if commit id required
                 print("%s" % commit.summary)
                 outfile.write("%s\n" % commit.summary)
-                rstfile.write("-  %s\n" % cast_cve_to_rst_format(commit.summary))
+                CVE_RST += "-  %s\n" % cast_cve_to_rst_format(commit.summary)
         print("DONE!")
 
         print("Getting the Fixes for the release.")
         outfile.write("\n\n---------------\nFixes\n---------------\n")
-
-        rstfile.write( "\n" + cast_to_rst_sections("Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
 
         for commit in repo.iter_commits(REVISIONS):
             if 'CVE' not in commit.summary:
                 # add commit.hexsha to print if commit id required
                 print("%s" % commit.summary)
                 outfile.write("%s\n" % commit.summary)
-                rstfile.write("-  %s\n" % commit.summary)
+                FIXES_RST += "-  %s\n" % commit.summary
     print("Done")
+
+    # write to RST file
+    rstfile.write( cast_to_rst_sections("Release notes for %s (%s)" % ( RELEASE.capitalize(), BRANCH.capitalize()), Sections.Section))
+    if REL_TYPE == "point":
+        rstfile.write(cast_to_rst_sections("Security Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
+        rstfile.write(FIXES_RST)
+
+        rstfile.write("\n" + cast_to_rst_sections("Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
+        rstfile.write(CVE_RST)
+
+        rstfile.write("\n" + cast_to_rst_sections("Known Issues in %s" % RELEASE.capitalize(), Sections.Subsection))
+        rstfile.write("Example link for bug : \n- :yocto_bugs:`bsps-hw.bsps-hw.Test_Seek_bar_and_volume_control manual test case failure </show_bug.cgi?id=14622>`\n\n")
+        
+        rstfile.write("\n" + cast_to_rst_sections("Contributors to %s" % RELEASE.capitalize(), Sections.Subsection))
+        rstfile.write(CONTRIBUTOR_RST)
+    
+    rstfile.write(cast_to_rst_sections("\nRepositories / Downloads for %s" % RELEASE.capitalize(), Sections.Subsection))
+    rstfile.write(ARTEFACTS_RST)
+    
     outfile.close()
     rstfile.close()
