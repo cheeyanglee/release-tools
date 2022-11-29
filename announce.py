@@ -132,8 +132,8 @@ if __name__ == '__main__':
     
     outfile = open(outpath, 'w')
 
-    print("\nSubject : %s\n\n" %SUBJECT)
-    outfile.write("Subject : %s\n\n" %SUBJECT)
+    print("\nSubject : [ANNOUNCEMENT] %s\n\n" %SUBJECT)
+    outfile.write("Subject : [ANNOUNCEMENT] %s\n\n" %SUBJECT)
 
     GREETINGS = "We are pleased to announce the " + RELEASE_STR + " is now available for download."
     print(GREETINGS)
