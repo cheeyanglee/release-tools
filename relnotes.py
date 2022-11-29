@@ -59,112 +59,6 @@ def get_repo(codename):
     print("We are now on branch: %s\n" %branch_name)
     return poky_repo
 
-def do_errata(outfile, rstfile, REL_TYPE):
-    print("Generating the Repositories/Downloads.")
-    outfile.write("\n--------------------------\n%s Release Notes\n--------------------------\n\n" %RELEASE)
-    outfile.write("\n--------------------------\n Repositories/Downloads\n--------------------------\n\n")
-
-    rstfile.write( cast_to_rst_sections("Release notes for %s (%s)" % ( RELEASE.capitalize(), BRANCH.capitalize()), Sections.Section))
-    rstfile.write( cast_to_rst_sections("Repositories / Downloads for %s" % RELEASE.capitalize(), Sections.Subsection) )
-
-    os.chdir(RC_SOURCE)
-    files = glob.glob('*.bz2')
-    allfiles = filter(lambda f: os.path.isfile(f), files)
-    # For major release and point releases errata do not want to include meta-intel.
-    blob_list = [y for y in allfiles if not y.startswith(('meta-intel', 'meta-aws', 'meta-openembedded', 'meta-arm', 'meta-agl', 'meta-virtualization'))]
-    blob_list.sort(reverse = True)
-    for item in blob_list:
-        chunks = split_thing(item, ".")
-        new_chunk = split_thing(chunks[0], '-')
-        hash = new_chunk.pop()
-        # Get the release name
-        base_name = chunks[0]
-        RELEASE_NAME = base_name
-        # Now let's get the sha256sum        
-        files = glob.glob('*.sha256sum')
-        shafile = list(filter(lambda y: RELEASE_NAME in y, files)).pop()
-        filepath = os.path.join(RC_SOURCE, shafile)
-        f = open(filepath, 'r')
-        rawline = f.readline()
-        shaline = split_thing(rawline, " ")
-        sha = shaline[0]
-        blob = shaline[2]
-        f.close()
-        # Set up the download URLS
-        DL_URL = "/".join([DL_BASE_URL, RELEASE, blob]).strip()
-        MIRROR_URL = "/".join([MIRROR_BASE_URL, RELEASE, blob]).strip()
-        # Now figure out tags and branches
-        name_chunks = split_thing(RELEASE_NAME, "-")
-        if name_chunks[0] == "eclipse":
-            PROJECT_BRANCH = "/".join([name_chunks[2], BRANCH])
-            PROJECT_TAG =  "/".join([name_chunks[2], DEFAULT_TAG])
-        else:
-            PROJECT_BRANCH = BRANCH
-            PROJECT_TAG = RELEASE
-            if name_chunks[0] == "poky" or name_chunks[0] == "bitbake":
-                REPO_NAME = name_chunks[0]
-                if REPO_NAME == "poky":
-                    REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
-                    REPO_URL_RST = ":yocto_git:`/%s`"  % REPO_NAME
-                    REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
-                    REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
-                    PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
-                else:
-                    REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
-                    REPO_URL_RST = ":oe_git:`/%s`"  % REPO_NAME
-                    REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
-                    REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
-                    PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (BITBAKE_BRANCH, REPO_NAME, BITBAKE_BRANCH)
-                    PROJECT_BRANCH = BITBAKE_BRANCH
-            elif name_chunks[0] == "oecore":
-                REPO_NAME = "openembedded-core"
-                REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
-                REPO_URL_RST = ":oe_git:`/%s`"  % REPO_NAME
-                REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
-                REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
-                PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
-            else:
-                REPO_NAME = "-".join([name_chunks[0], name_chunks[1]])
-                REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
-                REPO_URL_RST = ":yocto_git:`/%s`"  % REPO_NAME
-                REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
-                REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
-                PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
-        outfile.write("Repository Name: %s\n" %REPO_NAME)
-        outfile.write("Repository Location: %s\n" %REPO_URL)
-        outfile.write("Branch: %s\n" %PROJECT_BRANCH)
-        outfile.write("Tag: %s\n" %PROJECT_TAG)
-        outfile.write("Git Revision: %s\n" %hash)
-        outfile.write("Release Artefact: %s\n" %RELEASE_NAME)
-        outfile.write("sha: %s\n" %sha)
-        outfile.write("Download Locations:\n")
-        outfile.write(DL_URL + "\n")
-        outfile.write(MIRROR_URL + "\n\n")
-
-        rstfile.write("%s\n\n" %REPO_NAME)
-        rstfile.write("-  Repository Location: %s\n" %REPO_URL_RST)
-        rstfile.write("-  Branch: %s\n" % PROJECT_BRANCH_RST)
-        rstfile.write("-  Tag:  %s\n" % REPO_TAG_RST)
-        rstfile.write("-  Git Revision: %s\n" %REPO_HASH_RST)
-        rstfile.write("-  Release Artefact: %s\n" %RELEASE_NAME)
-        rstfile.write("-  sha: %s\n" %sha)
-        rstfile.write("-  Download Locations:\n")
-        rstfile.write("   %s" % DL_URL + "\n")
-        rstfile.write("   %s\n\n" % MIRROR_URL)
-
-    outfile.write("Repository Name: yocto-docs\n")
-    outfile.write("Repository Location: https://git.yoctoproject.org/yocto-docs\n")
-    outfile.write("Branch: %s\n" %PROJECT_BRANCH)
-    outfile.write("Tag: %s\n" %PROJECT_TAG)
-    outfile.write("Git Revision: <----------replace this with commit ID----------->\n\n")
-
-    rstfile.write("yocto-docs\n\n")
-    rstfile.write("-  Repository Location: :yocto_git:`/yocto-docs`\n")
-    rstfile.write("-  Branch: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (BRANCH, BRANCH))
-    rstfile.write("-  Tag: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (RELEASE, RELEASE))
-    rstfile.write("-  Git Revision: :yocto_git:`TBD </yocto-docs/commit/?id=TBD>`\n\n")
-
-    return
 
 def cast_cve_to_rst_format(line):
     pattern = r"cve-[0-9]*-[0-9]*"
@@ -275,8 +169,110 @@ if __name__ == '__main__':
 
     # Get the poky repo now so we can do all the things.
     repo = get_repo(BRANCH)
-   
-    do_errata(outfile,rstfile, REL_TYPE)
+
+    print("Generating the Repositories/Downloads.")
+    outfile.write("\n--------------------------\n%s Release Notes\n--------------------------\n\n" %RELEASE)
+    outfile.write("\n--------------------------\n Repositories/Downloads\n--------------------------\n\n")
+
+    rstfile.write( cast_to_rst_sections("Release notes for %s (%s)" % ( RELEASE.capitalize(), BRANCH.capitalize()), Sections.Section))
+    rstfile.write( cast_to_rst_sections("Repositories / Downloads for %s" % RELEASE.capitalize(), Sections.Subsection) )
+
+    os.chdir(RC_SOURCE)
+    files = glob.glob('*.bz2')
+    allfiles = filter(lambda f: os.path.isfile(f), files)
+    # For major release and point releases errata do not want to include meta-intel.
+    blob_list = [y for y in allfiles if not y.startswith(('meta-intel', 'meta-aws', 'meta-openembedded', 'meta-arm', 'meta-agl', 'meta-virtualization'))]
+    blob_list.sort(reverse = True)
+    for item in blob_list:
+        chunks = split_thing(item, ".")
+        new_chunk = split_thing(chunks[0], '-')
+        hash = new_chunk.pop()
+        # Get the release name
+        base_name = chunks[0]
+        RELEASE_NAME = base_name
+        # Now let's get the sha256sum
+        files = glob.glob('*.sha256sum')
+        shafile = list(filter(lambda y: RELEASE_NAME in y, files)).pop()
+        filepath = os.path.join(RC_SOURCE, shafile)
+        f = open(filepath, 'r')
+        rawline = f.readline()
+        shaline = split_thing(rawline, " ")
+        sha = shaline[0]
+        blob = shaline[2]
+        f.close()
+        # Set up the download URLS
+        DL_URL = "/".join([DL_BASE_URL, RELEASE, blob]).strip()
+        MIRROR_URL = "/".join([MIRROR_BASE_URL, RELEASE, blob]).strip()
+        # Now figure out tags and branches
+        name_chunks = split_thing(RELEASE_NAME, "-")
+        if name_chunks[0] == "eclipse":
+            PROJECT_BRANCH = "/".join([name_chunks[2], BRANCH])
+            PROJECT_TAG =  "/".join([name_chunks[2], DEFAULT_TAG])
+        else:
+            PROJECT_BRANCH = BRANCH
+            PROJECT_TAG = RELEASE
+            if name_chunks[0] == "poky" or name_chunks[0] == "bitbake":
+                REPO_NAME = name_chunks[0]
+                if REPO_NAME == "poky":
+                    REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
+                    REPO_URL_RST = ":yocto_git:`/%s`"  % REPO_NAME
+                    REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                    REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                    PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
+                else:
+                    REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+                    REPO_URL_RST = ":oe_git:`/%s`"  % REPO_NAME
+                    REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                    REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                    PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (BITBAKE_BRANCH, REPO_NAME, BITBAKE_BRANCH)
+                    PROJECT_BRANCH = BITBAKE_BRANCH
+            elif name_chunks[0] == "oecore":
+                REPO_NAME = "openembedded-core"
+                REPO_URL = "/".join(["https://git.openembedded.org",REPO_NAME])
+                REPO_URL_RST = ":oe_git:`/%s`"  % REPO_NAME
+                REPO_HASH_RST = ":oe_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                REPO_TAG_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                PROJECT_BRANCH_RST = ":oe_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
+            else:
+                REPO_NAME = "-".join([name_chunks[0], name_chunks[1]])
+                REPO_URL = "/".join(["https://git.yoctoproject.org",REPO_NAME])
+                REPO_URL_RST = ":yocto_git:`/%s`"  % REPO_NAME
+                REPO_HASH_RST = ":yocto_git:`%s </%s/commit/?id=%s>`" % ( hash, REPO_NAME ,hash )
+                REPO_TAG_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_TAG, REPO_NAME, PROJECT_TAG)
+                PROJECT_BRANCH_RST = ":yocto_git:`%s </%s/log/?h=%s>`" % (PROJECT_BRANCH, REPO_NAME, PROJECT_BRANCH)
+        outfile.write("Repository Name: %s\n" %REPO_NAME)
+        outfile.write("Repository Location: %s\n" %REPO_URL)
+        outfile.write("Branch: %s\n" %PROJECT_BRANCH)
+        outfile.write("Tag: %s\n" %PROJECT_TAG)
+        outfile.write("Git Revision: %s\n" %hash)
+        outfile.write("Release Artefact: %s\n" %RELEASE_NAME)
+        outfile.write("sha: %s\n" %sha)
+        outfile.write("Download Locations:\n")
+        outfile.write(DL_URL + "\n")
+        outfile.write(MIRROR_URL + "\n\n")
+
+        rstfile.write("%s\n\n" %REPO_NAME)
+        rstfile.write("-  Repository Location: %s\n" %REPO_URL_RST)
+        rstfile.write("-  Branch: %s\n" % PROJECT_BRANCH_RST)
+        rstfile.write("-  Tag:  %s\n" % REPO_TAG_RST)
+        rstfile.write("-  Git Revision: %s\n" %REPO_HASH_RST)
+        rstfile.write("-  Release Artefact: %s\n" %RELEASE_NAME)
+        rstfile.write("-  sha: %s\n" %sha)
+        rstfile.write("-  Download Locations:\n")
+        rstfile.write("   %s" % DL_URL + "\n")
+        rstfile.write("   %s\n\n" % MIRROR_URL)
+
+    outfile.write("Repository Name: yocto-docs\n")
+    outfile.write("Repository Location: https://git.yoctoproject.org/yocto-docs\n")
+    outfile.write("Branch: %s\n" %PROJECT_BRANCH)
+    outfile.write("Tag: %s\n" %PROJECT_TAG)
+    outfile.write("Git Revision: <----------replace this with commit ID----------->\n\n")
+
+    rstfile.write("yocto-docs\n\n")
+    rstfile.write("-  Repository Location: :yocto_git:`/yocto-docs`\n")
+    rstfile.write("-  Branch: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (BRANCH, BRANCH))
+    rstfile.write("-  Tag: :yocto_git:`%s </yocto-docs/log/?h=%s>`\n" % (RELEASE, RELEASE))
+    rstfile.write("-  Git Revision: :yocto_git:`TBD </yocto-docs/commit/?id=TBD>`\n\n")
 
     if REL_TYPE == "point":
         outfile.write("\n---------------\n Contributors\n---------------\n")
