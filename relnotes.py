@@ -291,26 +291,32 @@ if __name__ == '__main__':
         outfile.write("N/A\n\n")
 
         # We add known issues manually to the release notes.
-        print("Getting the Security Fixes for the release.")
-        outfile.write("\n---------------\nSecurity Fixes\n---------------\n")
-
+        print("Getting the Fixes and Security Fixes for the release.")
+        FIXES_LIST = []
+        CVE_FIXES_LIST = []
         for commit in repo.iter_commits(REVISIONS):
             if 'CVE' in commit.summary:
-                # add commit.hexsha to print if commit id required
-                print("%s" % commit.summary)
-                outfile.write("%s\n" % commit.summary)
-                CVE_RST += "-  %s\n" % cast_cve_to_rst_format(commit.summary)
+                print("CVE_FIXES - %s" % commit.summary)
+                CVE_FIXES_LIST.append(commit.summary)
+            else:
+                print("FIXES - %s" % commit.summary)
+                FIXES_LIST.append(commit.summary)
+
+        FIXES_LIST.sort()
+        CVE_FIXES_LIST.sort()
+
+        outfile.write("\n---------------\nSecurity Fixes\n---------------\n")
+        for commit in CVE_FIXES_LIST:
+            outfile.write("%s\n" % commit)
+            CVE_RST += "-  %s\n" % cast_cve_to_rst_format(commit)
         print("DONE!")
 
         print("Getting the Fixes for the release.")
         outfile.write("\n\n---------------\nFixes\n---------------\n")
 
-        for commit in repo.iter_commits(REVISIONS):
-            if 'CVE' not in commit.summary:
-                # add commit.hexsha to print if commit id required
-                print("%s" % commit.summary)
-                outfile.write("%s\n" % commit.summary)
-                FIXES_RST += "-  %s\n" % commit.summary
+        for commit in FIXES_LIST:
+            outfile.write("%s\n" % commit)
+            FIXES_RST += "-  %s\n" % commit
     print("Done")
 
     # write to RST file
