@@ -290,12 +290,15 @@ if __name__ == '__main__':
         outfile.write("\n---------------\n Known Issues\n---------------\n")
         outfile.write("N/A\n\n")
 
+        regex = re.compile(r"""cve-[0-9]+-[0-9]+""", re.IGNORECASE)
+
         # We add known issues manually to the release notes.
         print("Getting the Fixes and Security Fixes for the release.")
         FIXES_LIST = []
         CVE_FIXES_LIST = []
         for commit in repo.iter_commits(REVISIONS):
-            if 'CVE' in commit.summary:
+            cve_match = regex.search(commit.message)
+            if 'CVE' in commit.summary or cve_match:
                 print("CVE_FIXES - %s" % commit.summary)
                 CVE_FIXES_LIST.append(commit.summary)
             else:
