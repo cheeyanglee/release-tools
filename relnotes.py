@@ -323,6 +323,7 @@ if __name__ == '__main__':
     print("Done")
 
     # write to RST file
+    rstfile.write(".. SPDX-License-Identifier: CC-BY-SA-2.0-UK\n\n")
     rstfile.write( cast_to_rst_sections("Release notes for %s (%s)" % ( RELEASE.capitalize(), BRANCH.capitalize()), Sections.Section))
     if REL_TYPE == "point":
         rstfile.write(cast_to_rst_sections("Security Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
