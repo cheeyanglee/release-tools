@@ -51,8 +51,30 @@ data = {
      "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] }
    ] },
 
-   {"version_string": "milestone",
+   {"version_string": "scarthgap",
    "yocto_version": "5.0",
+   "date_string": "2024-04",
+   "bitbake_version": "2.8",
+   "repos": [
+    {"git_url" : "https://git.yoctoproject.org/poky" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/yocto-docs" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/meta-mingw" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.openembedded.org/bitbake" ,
+     "tags" : [ "yocto-yocto_version.minor_version", "date_string.minor_version-version_string", "bitbake_version.minor_version"] },
+    {"git_url" : "https://git.openembedded.org/openembedded-core" ,
+     "tags" : [ "yocto-yocto_version.minor_version", "date_string.minor_version-version_string", "date_string.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/yocto-testresults" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/yocto-testresults-contrib" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] }
+   ] },
+
+
+   {"version_string": "milestone",
+   "yocto_version": "5.1",
    "repos": [
     {"git_url" : "https://git.yoctoproject.org/poky" ,
      "tags" : [ "yocto_version_minor_version"] },
