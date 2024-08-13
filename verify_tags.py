@@ -90,22 +90,26 @@ data = {
 
 
 # Function to clone, verify, and remove the repository tag
-def clone_verify_and_remove(repo_url, tag):
+def clone_verify(repo_url, tag):
     with tempfile.TemporaryDirectory(dir='/tmp') as tmpdirname:
         clone_dir = tempfile.mkdtemp(dir=tmpdirname)
         try:
             # Clone the repository with the specific tag (shallow clone)
             subprocess.run(["git", "clone", "--depth", "1", "--branch", tag, repo_url, clone_dir], check=True)
+            # Get the current HEAD commit hash
+            commit_hash_result = subprocess.run(["git", "rev-parse", "HEAD"], cwd=clone_dir, \
+                                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            commit_hash = commit_hash_result.stdout.strip()
             # Verify the tag
             result = subprocess.run(["git", "verify-tag", tag], cwd=clone_dir, \
                      text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             out = result.stdout
             if 'Good signature from "Yocto Build and Release <releases@yoctoproject.org>"' in out:
-                return (repo_url, tag, "Good")
+                return (repo_url, tag, "Good", commit_hash)
             else:
-                return (repo_url, tag, "Bad")
+                return (repo_url, tag, "Bad", commit_hash)
         except subprocess.CalledProcessError as e:
-            return (repo_url, tag, "Error")
+            return (repo_url, tag, "Error", commit_hash)
 
 # Main function to process user input and perform actions
 def main(version_string, minor_version):
@@ -122,13 +126,13 @@ def main(version_string, minor_version):
                               .replace("minor_version", minor_version) \
                               .replace("bitbake_version", version_obj["bitbake_version"] or "") \
                               .replace("date_string", version_obj["date_string"] or "")
-            result = clone_verify_and_remove(repo["git_url"], tag)
+            result = clone_verify(repo["git_url"], tag)
             verification_results.append(result)
 
     # Display final results
     print("\nFinal Results:")
-    for repo_url, tag, status in verification_results:
-        print(f"Repo: {repo_url}, Tag: {tag}, Status: {status}")
+    for repo_url, tag, status, commit_hash in verification_results:
+        print(f"Repo: {repo_url}, Hash:{commit_hash}  Tag: {tag}, Status: {status}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
