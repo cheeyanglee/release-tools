@@ -183,7 +183,7 @@ if __name__ == '__main__':
     files = glob.glob('*.bz2')
     allfiles = filter(lambda f: os.path.isfile(f), files)
     # For major release and point releases errata do not want to include meta-intel.
-    blob_list = [y for y in allfiles if not y.startswith(('meta-intel', 'meta-aws', 'meta-openembedded', 'meta-arm', 'meta-agl', 'meta-virtualization'))]
+    blob_list = [y for y in allfiles if not y.startswith(('meta-intel', 'meta-clang',  'meta-aws', 'meta-openembedded', 'meta-arm', 'meta-agl', 'meta-virtualization'))]
     blob_list.sort(reverse = True)
     for item in blob_list:
         chunks = split_thing(item, ".")
