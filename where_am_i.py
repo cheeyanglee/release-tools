@@ -22,14 +22,9 @@ import sys
 import socket
 
 def where_am_i():
-    hosts = ["ubuntu2004-ty-1", "ubuntu2004-ty-2", "ubuntu1804-ty-1", "ubuntu1804-ty-2", "ubuntu1804-ty-3", "ubuntu1604-ty-1",
-                "centos7-ty-1", "centos7-ty-2", "centos7-ty-3", "centos7-ty-4", "centos8-ty-1", "centos8-ty-2",
-                "fedora29-ty-1", "fedora30-ty-1", "fedora30-ty-2",
-                "debian8-ty-1", "debian9-ty-2", "debian10-ty-1", "debian10-ty-2", "debian10-ty-3",
-                "tumbleweed-ty-1", "tumbleweed-ty-2", "tumbleweed-ty-3", "opensuse151-ty-1", "opensuse150-ty-1",
-                "ubuntu1804-ty-1", "ubuntu1804-ty-2", "ubuntu1804-ty-3",
-                "perf-ubuntu1604", "perf-centos7",
-                "ubuntu1804-arm-1"]
+    hosts = ["debian12-vk-6", "debian12-vk-7", "debian12-vk-8", "debian12-vk-9",
+             "ubuntu2404-vk-1","ubuntu2404-vk-2", "ubuntu2404-vk-3"]
+
     abhost = socket.getfqdn()
     print "ABHOST: %s" %abhost
     if "yocto.io" in abhost or abhost in hosts:
@@ -42,7 +37,7 @@ def where_am_i():
         #VHOSTS = "/srv/autobuilder"
         VHOSTS = "/srv/www/vhosts"
         print("Setting VHOSTS to %s" %VHOSTS)
-    AB_HOME = os.path.join(VHOSTS, "autobuilder.yoctoproject.org/pub") # uninative release (uninative.py) uses this
+    AB_HOME = os.path.join(VHOSTS, "valkyrie.yocto.io/pub") # uninative release (uninative.py) uses this
     AB_BASE = os.path.join(AB_HOME, "releases") # all RC candidates live here
     DL_HOME = os.path.join(VHOSTS, "downloads.yoctoproject.org/releases") # uninative release (uninative.py) uses this
     DL_BASE = os.path.join(DL_HOME, "yocto") # all other releases use this
