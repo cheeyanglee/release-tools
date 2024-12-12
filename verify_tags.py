@@ -30,10 +30,10 @@ data = {
      "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] }
 	 ] },
 
-   {"version_string": "nanbield",
-   "yocto_version": "4.3",
-   "date_string": "2023-10",
-   "bitbake_version": "2.6",
+   {"version_string": "styhead",
+   "yocto_version": "5.1",
+   "date_string": "2024-10",
+   "bitbake_version": "2.10",
    "repos": [
     {"git_url" : "https://git.yoctoproject.org/poky" ,
      "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
@@ -74,7 +74,7 @@ data = {
 
 
    {"version_string": "milestone",
-   "yocto_version": "5.1",
+   "yocto_version": "5.2",
    "repos": [
     {"git_url" : "https://git.yoctoproject.org/poky" ,
      "tags" : [ "yocto_version_minor_version"] },
