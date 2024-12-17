@@ -40,7 +40,7 @@ def cast_cve_to_rst_format(line):
                     tmp = "%s`" % re.sub("cve-",":cve_mitre:`", cve, flags=re.I)
             if nvd:
                 if not "CVE ID Not Found" in nvd.text and not "Invalid Parameters" in nvd.text:
-                    tmp = "%s`" % re.sub("cve-",":cve:`", cve, flags=re.I)
+                    tmp = "%s`" % re.sub("cve-",":cve_nist:`", cve, flags=re.I)
             cves.append(tmp)
             
             rline = re.sub(cve, tmp, line, flags=re.I)
