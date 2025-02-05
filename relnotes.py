@@ -333,9 +333,11 @@ if __name__ == '__main__':
         rstfile.write(CVE_RST)
 
         rstfile.write("\n" + cast_to_rst_sections("Known Issues in %s" % RELEASE.capitalize(), Sections.Subsection))
-        rstfile.write("Example link for bug : \n- :yocto_bugs:`bsps-hw.bsps-hw.Test_Seek_bar_and_volume_control manual test case failure </show_bug.cgi?id=14622>`\n\n")
+        rstfile.write("Example link for bug : \n- :yocto_bugs:`bsps-hw.bsps-hw.Test_Seek_bar_and_volume_control manual test case failure </show_bug.cgi?id=14622>`\n- N/A\n")
         
         rstfile.write("\n" + cast_to_rst_sections("Contributors to %s" % RELEASE.capitalize(), Sections.Subsection))
+        rstfile.write("\nThanks to the following people who contributed to this release:\n")
+
         rstfile.write(CONTRIBUTOR_RST)
     
     rstfile.write(cast_to_rst_sections("\nRepositories / Downloads for %s" % RELEASE.capitalize(), Sections.Subsection))
