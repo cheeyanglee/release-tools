@@ -327,10 +327,8 @@ if __name__ == '__main__':
     rstfile.write( cast_to_rst_sections("Release notes for %s (%s)" % ( RELEASE.capitalize(), BRANCH.capitalize()), Sections.Section))
     if REL_TYPE == "point":
         rstfile.write(cast_to_rst_sections("Security Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
-        rstfile.write(FIXES_RST)
 
         rstfile.write("\n" + cast_to_rst_sections("Fixes in %s" % RELEASE.capitalize(), Sections.Subsection))
-        rstfile.write(CVE_RST)
 
         rstfile.write("\n" + cast_to_rst_sections("Known Issues in %s" % RELEASE.capitalize(), Sections.Subsection))
         rstfile.write("Example link for bug : \n- :yocto_bugs:`bsps-hw.bsps-hw.Test_Seek_bar_and_volume_control manual test case failure </show_bug.cgi?id=14622>`\n- N/A\n")
