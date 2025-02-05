@@ -44,8 +44,8 @@ if __name__ == '__main__':
     AB_BASE = PATH_VARS['AB_BASE']
     DL_HOME = PATH_VARS['DL_HOME']
     DL_BASE = PATH_VARS['DL_BASE']
-    DL_BASE_URL = "http://downloads.yoctoproject.org/releases/yocto"
-    MIRROR_BASE_URL = "http://mirrors.kernel.org/yocto/yocto"
+    DL_BASE_URL = "https://downloads.yoctoproject.org/releases/yocto"
+    MIRROR_BASE_URL = "https://mirrors.kernel.org/yocto/yocto"
     TEST_REPORT = "testreport.txt"
     HOME = os.getcwd()
 

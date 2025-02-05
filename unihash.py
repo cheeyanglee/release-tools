@@ -22,7 +22,7 @@ from pygit2 import Repository, clone_repository
 from pygit2 import GIT_SORT_TOPOLOGICAL
 
 def main(hash):
-    repo_url = 'http://git.yoctoproject.org/git/poky'
+    repo_url = 'https://git.yoctoproject.org/git/poky'
     CWD = os.getcwd()
     repo_path = os.path.join(CWD,'poky')
     print("repo_path: %s" %repo_path)

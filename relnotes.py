@@ -140,8 +140,8 @@ if __name__ == '__main__':
     # Drop the appended release name from the respective file when the finalized version gets 
     # copied into the release directory. i.e. Just RELEASENOTES, not RELEASENOTES.<release>
     RELEASE_NOTES = ".".join(["RELEASENOTES", RELEASE])
-    DL_BASE_URL = "http://downloads.yoctoproject.org/releases/yocto"
-    MIRROR_BASE_URL = "http://mirrors.kernel.org/yocto/yocto"
+    DL_BASE_URL = "https://downloads.yoctoproject.org/releases/yocto"
+    MIRROR_BASE_URL = "https://mirrors.kernel.org/yocto/yocto"
     HOME = os.getcwd()
     POKY_REPO = os.path.join(HOME, "poky")
     outpath = os.path.join(HOME, RELEASE_NOTES)
