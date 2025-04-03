@@ -6,18 +6,65 @@ import re
 import requests
 import git
 import shutil
+import subprocess
 
 def get_request(url):
-    # try request for 3 time max 
+    # Try request for 3 times max
     count = 0
-    while(count < 3):
+    req = None
+    while count < 3:
         try:
             print("checking request %s ..." % url)
-            req = requests.get(url, timeout=20)
-            break
-        except:
+            
+            # Using wget to fetch the URL
+            result = subprocess.run(
+                ['wget', '-q', '--timeout=40', '--tries=1', '-O', 'output.html', url],
+                capture_output=True,
+                text=True
+            )
+            
+            # Check if wget was successful
+            if result.returncode == 0:
+                with open('output.html', 'r', encoding='utf-8') as f:
+                    req = type('Response', (object,), {'text': f.read()})
+                break
+            else:
+                count += 1
+        except Exception as e:
+            print(f"Error: {e}")
             count += 1
+    
+    # Clean up the output file if it exists
+    if os.path.exists('output.html'):
+        os.remove('output.html')
+    
     return req
+
+def split_text(text, max_length=100):
+    words = text.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        # Check if adding the next word would exceed the max length
+        if len(current_line) + len(word) + 1 > max_length:
+            # If it would, add the current line to the list of lines
+            lines.append(current_line)
+            # Start a new line with the current word and keep 3 space in front for new line
+            current_line = "   " + word
+        else:
+            # If it wouldn't, add the word to the current line
+            if current_line:
+                current_line += " " + word
+            else:
+                current_line = word
+
+    # Add the last line to the list of lines
+    if current_line:
+        lines.append(current_line)
+
+    # Join the lines with newline characters and return the result
+    return "\n".join(lines)
 
 def cast_cve_to_rst_format(line):
     cve_exist = re.search(r"(?P<cve>cve-[0-9]*-[0-9]*)( +|$)", line, flags=re.I)
@@ -35,12 +82,16 @@ def cast_cve_to_rst_format(line):
             mitre = get_request('https://cve.mitre.org/cgi-bin/cvename.cgi?name=%s' % cve.upper())
 
             tmp = cve
-            if mitre:
+            if nvd:
+                print("Found cve in nvd")
+                if not "CVE ID Not Found" in nvd.text and not "Invalid Parameters" in nvd.text:
+                    print("both text not found")
+                    tmp = "%s`" % re.sub("cve-",":cve_nist:`", cve, flags=re.I)
+
+            elif mitre:
+                print("Found cve in mitre")
                 if not "Could not find a CVE Record for" in mitre.text:
                     tmp = "%s`" % re.sub("cve-",":cve_mitre:`", cve, flags=re.I)
-            if nvd:
-                if not "CVE ID Not Found" in nvd.text and not "Invalid Parameters" in nvd.text:
-                    tmp = "%s`" % re.sub("cve-",":cve_nist:`", cve, flags=re.I)
             cves.append(tmp)
             
             rline = re.sub(cve, tmp, line, flags=re.I)
@@ -144,7 +195,7 @@ for line in lines:
     for x, pat in enumerate(all_terms_patterns):
         l = re.sub(pat,all_terms_patterns[pat] ,l)
 
-    outfile.write("-  %s" % l )
+    outfile.write("-  %s\n" % split_text(l) )
 
 infile.close()
 outfile.close()
