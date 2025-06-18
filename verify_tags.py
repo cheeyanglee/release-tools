@@ -72,6 +72,28 @@ data = {
      "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] }
    ] },
 
+   {"version_string": "walnascar",
+   "yocto_version": "5.2",
+   "date_string": "2025-04",
+   "bitbake_version": "2.12",
+   "repos": [
+    {"git_url" : "https://git.yoctoproject.org/poky" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/yocto-docs" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/meta-mingw" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.openembedded.org/bitbake" ,
+     "tags" : [ "yocto-yocto_version.minor_version", "date_string.minor_version-version_string", "bitbake_version.minor_version"] },
+    {"git_url" : "https://git.openembedded.org/openembedded-core" ,
+     "tags" : [ "yocto-yocto_version.minor_version", "date_string.minor_version-version_string", "date_string.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/yocto-testresults" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/yocto-testresults-contrib" ,
+     "tags" : [ "version_string-yocto_version.minor_version",  "yocto-yocto_version.minor_version"] }
+   ] },
+
+
 
    {"version_string": "milestone",
    "yocto_version": "5.2",
@@ -109,7 +131,7 @@ def clone_verify(repo_url, tag):
             else:
                 return (repo_url, tag, "Bad", commit_hash)
         except subprocess.CalledProcessError as e:
-            return (repo_url, tag, "Error", commit_hash)
+            return (repo_url, tag, "Error","N/A")
 
 # Main function to process user input and perform actions
 def main(version_string, minor_version):
@@ -132,6 +154,7 @@ def main(version_string, minor_version):
     # Display final results
     print("\nFinal Results:")
     for repo_url, tag, status, commit_hash in verification_results:
+
         print(f"Repo: {repo_url}, Hash:{commit_hash}  Tag: {tag}, Status: {status}")
 
 if __name__ == "__main__":
