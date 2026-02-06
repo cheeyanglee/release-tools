@@ -137,18 +137,18 @@ def get_all_term(poky_repo):
 
 
 def get_repo(codename):
-    repo_url = 'https://git.yoctoproject.org/poky'
+    repo_url = 'https://git.yoctoproject.org/yocto-docs'
     CWD = os.getcwd()
-    repo_path = os.path.join(CWD,'poky')
+    repo_path = os.path.join(CWD,'yocto-docs')
     if os.path.exists(repo_path):
         print("\nFound an existing poky repo. Nuking it.")
         shutil.rmtree(repo_path)
-    print("Cloning the poky repo.")
+    print("Cloning the yocto-docs repo.")
     try:
         poky_repo = git.Repo.clone_from(repo_url, repo_path)
         poky_repo.git.checkout(codename)
     except:
-        print("Couldn't check out the poky repo with branch %s. Check the branch name you passed in." %codename)
+        print("Couldn't check out the yocto-docs repo with branch %s. Check the branch name you passed in." %codename)
         sys.exit()
     # Are we where we think we are?
     branch_name = poky_repo.head.ref
