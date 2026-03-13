@@ -102,7 +102,7 @@ data = {
    ] },
 
    {"version_string": "wrynose",
-   "yocto_version": "5.4",
+   "yocto_version": "6.0",
    "date_string": "2026-04",
    "bitbake_version": "2.18",
    "repos": [
@@ -123,9 +123,11 @@ data = {
    ] },
 
    {"version_string": "milestone",
-   "yocto_version": "5.4",
+   "yocto_version": "6.0",
    "repos": [
-    {"git_url" : "https://git.yoctoproject.org/poky" ,
+    {"git_url" : "https://git.yoctoproject.org/yocto-docs" ,
+     "tags" : [ "yocto_version_minor_version"] },
+    {"git_url" : "https://git.yoctoproject.org/meta-yocto" ,
      "tags" : [ "yocto_version_minor_version"] },
     {"git_url" : "https://git.yoctoproject.org/meta-mingw" ,
      "tags" : [ "yocto_version_minor_version"] },
